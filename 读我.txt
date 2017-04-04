@@ -1,6 +1,0 @@
-1.将 PaperManagement.apk 文件复制到Android手机，找到文件安装，首次运行APP，
-	弹出对话框提示“请输入名称”，输入“纸箱厂”，点击确定可以看到数据；
-2.将infor.txt文件和PaperManagementClient.exe放到一个目录下，双击exe文件运行；
-3.修改infor.txt文件中“Factory”和"Other"对应的数据（数据格式不能变），保存，
-	看到PaperManagementClient.exe的窗口中提示"post success"，刷新APP就能看到修改后的数据
-4.有问题微信随时找我
