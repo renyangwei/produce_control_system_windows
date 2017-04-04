@@ -3,3 +3,4 @@
 2.将infor.txt文件和PaperManagementClient.exe放到一个目录下，双击exe文件运行；
 3.修改infor.txt文件中“Factory”和"Other"对应的数据（数据格式不能变），保存，
 	看到PaperManagementClient.exe的窗口中提示"post success"，刷新APP就能看到修改后的数据
+4.有问题微信联系
