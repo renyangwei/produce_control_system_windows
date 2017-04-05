@@ -2,13 +2,14 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/robfig/cron"
 )
@@ -27,20 +28,36 @@ func main() {
 	//	spec := "0 */1 * * * *" //每分钟一次
 	spec := "*/10 * * * * *"
 	c.AddFunc(spec, func() {
-
 		//读取文件
-		inputFile := FILE_NAME
-		buf, err := ioutil.ReadFile(inputFile)
+		fd, err := os.Open(FILE_NAME)
 		if err != nil {
-			log.Println(os.Stderr, "File Error: %s\n", err)
+			log.Println("open file err:", err.Error())
 		}
-		fileContent := string(buf)
-		log.Println("file content:\n", fileContent)
+		br := bufio.NewReader(fd)
+		r, _, err := br.ReadRune()
+		if err != nil {
+			log.Println("read rune err:", err.Error())
+		}
+		if r != '\uFEFF' {
+			br.UnreadRune() // Not a BOM -- put the rune back
+		}
+		fileContent := ""
+		for {
+			str, err := br.ReadString('\n')
+			fileContent = fileContent + str
+			if err == io.EOF {
+				break
+			}
+		}
+		log.Println("fileContent:", fileContent)
 
-		//解析内容
-		//		paperManageMap := ParseFileContent(fileContent)
-		//		log.Println("paperManageMap:\n", paperManageMap)
+		if fd.Close() != nil {
+			log.Println("file.close err:", err.Error())
+		}
+
+		//判断格式
 		if !checkData(fileContent) {
+			log.Println("check data failed")
 			return
 		}
 
@@ -50,30 +67,6 @@ func main() {
 	})
 	c.Start()
 	select {} //阻塞主线程不退出
-}
-
-/*
-解析文件内容
-*/
-func ParseFileContent(fileContent string) (paperManageMap map[string]string) {
-	paperManageMap = make(map[string]string)
-	fileContentSlices := strings.Split(fileContent, ",")
-	//	log.Println("fileContentSlices:\n", fileContentSlices)
-	if len(fileContentSlices) == 0 {
-		log.Println("fileContentSlices length is 0")
-		return
-	}
-	for _, value := range fileContentSlices {
-		if len(value) > 0 {
-			valueSlices := strings.Split(value, ":")
-			if len(valueSlices) == 0 {
-				log.Println("valueSlices length is 0")
-				return
-			}
-			paperManageMap[valueSlices[0]] = valueSlices[1]
-		}
-	}
-	return paperManageMap
 }
 
 /*
