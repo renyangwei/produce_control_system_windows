@@ -26,7 +26,7 @@ func main() {
 	c := cron.New()
 	//秒 分 时 日 月 星期
 	//	spec := "0 */1 * * * *" //每分钟一次
-	spec := "*/10 * * * * *"
+	spec := "*/5 * * * * *"
 	c.AddFunc(spec, func() {
 		//读取文件
 		fd, err := os.Open(FILE_NAME)
