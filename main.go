@@ -10,9 +10,11 @@ import (
 	//"log"
 	"net/http"
 	"os"
-	"strings"
+	//	"strings"
 
-	"github.com/robfig/cron"
+	"PaperManagementClient/sql"
+
+	//	"github.com/robfig/cron"
 )
 
 const (
@@ -49,51 +51,54 @@ type ResponseJson struct {
 var factoryName string
 
 func main() {
-	c := cron.New()
-	//秒 分 时 日 月 星期
-	//	spec := "0 */1 * * * *" //每分钟一次
-	spec := "*/5 * * * * *" //每五秒一次
-	c.AddFunc(spec, func() {
-		FILE_NAME_ARRAY := []string{"infor.txt", "infor1.txt", "infor2.txt", "infor3.txt", "infor4.txt", "infor5.txt"}
-		FILE_NAME_DATA_ARRAY := []string{"data.txt", "data1.txt", "data2.txt", "data3.txt", "data4.txt", "data5.txt"}
-		GROUP_NAME_ARRAY := []string{"一号线", "二号线", "三号线", "四号线", "五号线", "六号线"}
 
-		//读取文件路径
-		path, err := os.Open(FILE_PATH)
-		if err != nil {
-			//			log.Println("open file path error,", err.Error())
-			return
-		}
-		reader := bufio.NewReader(path)
-		r, _, err := reader.ReadRune()
-		if err != nil {
-			//			log.Println("read rune err:", err.Error())
-			return
-		}
-		if r != '\uFEFF' {
-			reader.UnreadRune() // Not a BOM -- put the rune back
-		}
-		pathContent, err := reader.ReadString('\n')
-		if err != nil {
-			//			log.Println("read string path error,", err.Error())
-			return
-		}
-		//		log.Println("pathContent:", pathContent)
-		pathArray := strings.Split(pathContent, ",")
-		for i := 0; i < len(pathArray); i++ {
-			pathArr := pathArray[0]
-			if i == len(pathArray)-1 {
-				pathArr = pathArray[i][0 : len(pathArray[i])-2]
-			}
-			//			log.Println("pathArr,", pathArr)
-			fileName := pathArr + FILE_NAME_ARRAY[i]
-			dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
-			readFile(fileName, GROUP_NAME_ARRAY[i], HTTP_URL_FACTORY)
-			readFile(dataName, GROUP_NAME_ARRAY[i], HTTP_URL_HISTORY)
-		}
-	})
-	c.Start()
-	select {} //阻塞主线程不退出
+	sql.ConnectSql()
+
+	//	c := cron.New()
+	//	//秒 分 时 日 月 星期
+	//	//	spec := "0 */1 * * * *" //每分钟一次
+	//	spec := "*/5 * * * * *" //每五秒一次
+	//	c.AddFunc(spec, func() {
+	//		FILE_NAME_ARRAY := []string{"infor.txt", "infor1.txt", "infor2.txt", "infor3.txt", "infor4.txt", "infor5.txt"}
+	//		FILE_NAME_DATA_ARRAY := []string{"data.txt", "data1.txt", "data2.txt", "data3.txt", "data4.txt", "data5.txt"}
+	//		GROUP_NAME_ARRAY := []string{"一号线", "二号线", "三号线", "四号线", "五号线", "六号线"}
+
+	//		//读取文件路径
+	//		path, err := os.Open(FILE_PATH)
+	//		if err != nil {
+	//			//			log.Println("open file path error,", err.Error())
+	//			return
+	//		}
+	//		reader := bufio.NewReader(path)
+	//		r, _, err := reader.ReadRune()
+	//		if err != nil {
+	//			//			log.Println("read rune err:", err.Error())
+	//			return
+	//		}
+	//		if r != '\uFEFF' {
+	//			reader.UnreadRune() // Not a BOM -- put the rune back
+	//		}
+	//		pathContent, err := reader.ReadString('\n')
+	//		if err != nil {
+	//			//			log.Println("read string path error,", err.Error())
+	//			return
+	//		}
+	//		//		log.Println("pathContent:", pathContent)
+	//		pathArray := strings.Split(pathContent, ",")
+	//		for i := 0; i < len(pathArray); i++ {
+	//			pathArr := pathArray[0]
+	//			if i == len(pathArray)-1 {
+	//				pathArr = pathArray[i][0 : len(pathArray[i])-2]
+	//			}
+	//			//			log.Println("pathArr,", pathArr)
+	//			fileName := pathArr + FILE_NAME_ARRAY[i]
+	//			dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
+	//			readFile(fileName, GROUP_NAME_ARRAY[i], HTTP_URL_FACTORY)
+	//			readFile(dataName, GROUP_NAME_ARRAY[i], HTTP_URL_HISTORY)
+	//		}
+	//	})
+	//	c.Start()
+	//	select {} //阻塞主线程不退出
 }
 
 /*
