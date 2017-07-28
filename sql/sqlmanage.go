@@ -2,73 +2,37 @@
 package sql
 
 import (
-	"database/sql"
-	"fmt"
-	"strings"
-
-	_ "github.com/mattn/go-adodb"
+	"PaperManagementClient/util"
+	"strconv"
 )
 
-type Mssql struct {
-	*sql.DB
-	dataSource string
-	database   string
-	windows    bool
-	sa         SA
+var (
+	host_        string
+	user_        string
+	pwd_         string
+	port_        string
+	database_    string
+	server_name_ string
+	rows_limit_  string
+	Debug        string
+)
+
+func init() {
+	host_ = util.Param("host")
+	user_ = util.Param("user")
+	pwd_ = util.Param("pwd")
+	port_ = util.Param("port")
+	database_ = util.Param("database")
+	server_name_ = util.Param("server_name")
+	rows_limit_ = util.Param("rows_limit")
+	Debug = util.Param("debug")
 }
 
-type SA struct {
-	user   string
-	passwd string
-}
-
-func (m *Mssql) Open() (err error) {
-	var conf []string
-	conf = append(conf, "Provider=Microsoft.Jet.OLEDB.4.0")
-	conf = append(conf, "Data Source="+m.dataSource)
-	if m.windows {
-		// Integrated Security=SSPI 这个表示以当前WINDOWS系统用户身去登录SQL SERVER服务器(需要在安装sqlserver时候设置)，
-		// 如果SQL SERVER服务器不支持这种方式登录时，就会出错。
-		conf = append(conf, "integrated security=SSPI")
-	}
-	conf = append(conf, "Initial Catalog="+m.database)
-	conf = append(conf, "user id="+m.sa.user)
-	conf = append(conf, "password="+m.sa.passwd)
-	m.DB, err = sql.Open("adodb", strings.Join(conf, ";"))
+func Connect() {
+	iport, err := strconv.Atoi(port_)
 	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func ConnectSql() {
-	db := Mssql{
-		dataSource: ".",
-		database:   "scgl",
-		// windwos: true 为windows身份验证，false 必须设置sa账号和密码
-		windows: true,
-		sa: SA{
-			user:   "sa",
-			passwd: "123456",
-		},
-	}
-	// 连接数据库
-	err := db.Open()
-	if err != nil {
-		fmt.Println("sql open:", err)
+		util.PrintLog("params port err:", err.Error())
 		return
 	}
-	defer db.Close()
-	// 执行SQL语句
-	rows, err := db.Query("select * from dbo.xddmx")
-	if err != nil {
-		fmt.Println("query: ", err)
-		return
-	}
-	for rows.Next() {
-		var khjc string
-		var scxh int
-		rows.Scan(&khjc, &scxh)
-		fmt.Printf("khjc: %s \t scxh: %d\n", khjc, scxh)
-	}
+	ConnectSqlServer(host_, user_, pwd_, database_, server_name_, iport, rows_limit_)
 }

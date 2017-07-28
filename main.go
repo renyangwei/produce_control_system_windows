@@ -7,21 +7,21 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
-	//"log"
 	"net/http"
 	"os"
-	//	"strings"
+	"strings"
 
 	"PaperManagementClient/sql"
+	"PaperManagementClient/util"
 
-	//	"github.com/robfig/cron"
+	"github.com/robfig/cron"
 )
 
 const (
 	//主机地址
-	HTTP_URL_FACTORY string = "http://180.76.163.58:8081/factory"
-	HTTP_URL_HISTORY string = "http://180.76.163.58:8081/history"
-	HTTP_URL_FORCE   string = "http://180.76.163.58:8081/force"
+	HTTP_URL_FACTORY string = "http://gzzhizhuo:8081/factory"
+	HTTP_URL_HISTORY string = "http://gzzhizhuo:8081/history"
+	HTTP_URL_FORCE   string = "http://gzzhizhuo:8081/force"
 	//	HTTP_URL_FACTORY string = "http://localhost:8081/factory"
 	//	HTTP_URL_HISTORY string = "http://localhost:8081/history"
 	//	HTTP_URL_FORCE   string = "http://localhost:8081/force"
@@ -51,54 +51,78 @@ type ResponseJson struct {
 var factoryName string
 
 func main() {
+	cronDatabase()
+	//	cronFile()
+}
 
-	sql.ConnectSql()
+/*
+定时连接数据库
+*/
+func cronDatabase() {
+	time_interval := util.Param("time_interval")
+	util.PrintLog("time_interval:", time_interval)
+	c := cron.New()
+	//秒 分 时 日 月 星期
+	spec := "*/" + time_interval + " * * * * *"
+	util.PrintLog("spec:", spec)
+	c.AddFunc(spec, func() {
+		sql.Connect()
+	})
+	c.Start()
+	select {}
 
-	//	c := cron.New()
-	//	//秒 分 时 日 月 星期
-	//	//	spec := "0 */1 * * * *" //每分钟一次
-	//	spec := "*/5 * * * * *" //每五秒一次
-	//	c.AddFunc(spec, func() {
-	//		FILE_NAME_ARRAY := []string{"infor.txt", "infor1.txt", "infor2.txt", "infor3.txt", "infor4.txt", "infor5.txt"}
-	//		FILE_NAME_DATA_ARRAY := []string{"data.txt", "data1.txt", "data2.txt", "data3.txt", "data4.txt", "data5.txt"}
-	//		GROUP_NAME_ARRAY := []string{"一号线", "二号线", "三号线", "四号线", "五号线", "六号线"}
+	//	sql.Connect()
+}
 
-	//		//读取文件路径
-	//		path, err := os.Open(FILE_PATH)
-	//		if err != nil {
-	//			//			log.Println("open file path error,", err.Error())
-	//			return
-	//		}
-	//		reader := bufio.NewReader(path)
-	//		r, _, err := reader.ReadRune()
-	//		if err != nil {
-	//			//			log.Println("read rune err:", err.Error())
-	//			return
-	//		}
-	//		if r != '\uFEFF' {
-	//			reader.UnreadRune() // Not a BOM -- put the rune back
-	//		}
-	//		pathContent, err := reader.ReadString('\n')
-	//		if err != nil {
-	//			//			log.Println("read string path error,", err.Error())
-	//			return
-	//		}
-	//		//		log.Println("pathContent:", pathContent)
-	//		pathArray := strings.Split(pathContent, ",")
-	//		for i := 0; i < len(pathArray); i++ {
-	//			pathArr := pathArray[0]
-	//			if i == len(pathArray)-1 {
-	//				pathArr = pathArray[i][0 : len(pathArray[i])-2]
-	//			}
-	//			//			log.Println("pathArr,", pathArr)
-	//			fileName := pathArr + FILE_NAME_ARRAY[i]
-	//			dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
-	//			readFile(fileName, GROUP_NAME_ARRAY[i], HTTP_URL_FACTORY)
-	//			readFile(dataName, GROUP_NAME_ARRAY[i], HTTP_URL_HISTORY)
-	//		}
-	//	})
-	//	c.Start()
-	//	select {} //阻塞主线程不退出
+/*
+定时读取文件
+*/
+func cronFile() {
+	c := cron.New()
+	//秒 分 时 日 月 星期
+	//	spec := "0 */1 * * * *" //每分钟一次
+	spec := "*/5 * * * * *" //每五秒一次
+	c.AddFunc(spec, func() {
+		FILE_NAME_ARRAY := []string{"infor.txt", "infor1.txt", "infor2.txt", "infor3.txt", "infor4.txt", "infor5.txt"}
+		FILE_NAME_DATA_ARRAY := []string{"data.txt", "data1.txt", "data2.txt", "data3.txt", "data4.txt", "data5.txt"}
+		GROUP_NAME_ARRAY := []string{"一号线", "二号线", "三号线", "四号线", "五号线", "六号线"}
+
+		//读取文件路径
+		path, err := os.Open(FILE_PATH)
+		if err != nil {
+			//			log.Println("open file path error,", err.Error())
+			return
+		}
+		reader := bufio.NewReader(path)
+		r, _, err := reader.ReadRune()
+		if err != nil {
+			//			log.Println("read rune err:", err.Error())
+			return
+		}
+		if r != '\uFEFF' {
+			reader.UnreadRune() // Not a BOM -- put the rune back
+		}
+		pathContent, err := reader.ReadString('\n')
+		if err != nil {
+			//			log.Println("read string path error,", err.Error())
+			return
+		}
+		//		log.Println("pathContent:", pathContent)
+		pathArray := strings.Split(pathContent, ",")
+		for i := 0; i < len(pathArray); i++ {
+			pathArr := pathArray[0]
+			if i == len(pathArray)-1 {
+				pathArr = pathArray[i][0 : len(pathArray[i])-2]
+			}
+			//			log.Println("pathArr,", pathArr)
+			fileName := pathArr + FILE_NAME_ARRAY[i]
+			dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
+			readFile(fileName, GROUP_NAME_ARRAY[i], HTTP_URL_FACTORY)
+			readFile(dataName, GROUP_NAME_ARRAY[i], HTTP_URL_HISTORY)
+		}
+	})
+	c.Start()
+	select {} //阻塞主线程不退出
 }
 
 /*
