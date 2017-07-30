@@ -49,8 +49,8 @@ type FinishInfo struct {
 }
 
 const (
-	HTTP_URL_ORDER       string = "http://localhost:8081/order"
-	HTTP_URL_FINISH_INFO string = "http://localhost:8081/finish_info"
+	HTTP_URL_ORDER       string = "http://gzzhizhuo.com:8081/order"
+	HTTP_URL_FINISH_INFO string = "http://gzzhizhuo.com:8081/finish_info"
 	HTTP_APPLICATION     string = "application/json;charset=utf-8"
 )
 

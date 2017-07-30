@@ -19,9 +19,9 @@ import (
 
 const (
 	//主机地址
-	HTTP_URL_FACTORY string = "http://gzzhizhuo:8081/factory"
-	HTTP_URL_HISTORY string = "http://gzzhizhuo:8081/history"
-	HTTP_URL_FORCE   string = "http://gzzhizhuo:8081/force"
+	HTTP_URL_FACTORY string = "http://gzzhizhuo.com:8081/factory"
+	HTTP_URL_HISTORY string = "http://gzzhizhuo.com:8081/history"
+	HTTP_URL_FORCE   string = "http://gzzhizhuo.com:8081/force"
 	//	HTTP_URL_FACTORY string = "http://localhost:8081/factory"
 	//	HTTP_URL_HISTORY string = "http://localhost:8081/history"
 	//	HTTP_URL_FORCE   string = "http://localhost:8081/force"
@@ -51,33 +51,37 @@ type ResponseJson struct {
 var factoryName string
 
 func main() {
-	cronDatabase()
-	//	cronFile()
+
+	cronFile()
+
 }
 
-/*
-定时连接数据库
-*/
-func cronDatabase() {
-	time_interval := util.Param("time_interval")
-	util.PrintLog("time_interval:", time_interval)
-	c := cron.New()
-	//秒 分 时 日 月 星期
-	spec := "*/" + time_interval + " * * * * *"
-	util.PrintLog("spec:", spec)
-	c.AddFunc(spec, func() {
-		sql.Connect()
-	})
-	c.Start()
-	select {}
+///*
+//定时连接数据库
+//*/
+//func cronDatabase() {
 
-	//	sql.Connect()
-}
+//	c := cron.New()
+//	//秒 分 时 日 月 星期
+
+//	c.AddFunc(spec, func() {
+//		sql.Connect()
+//	})
+//	c.Start()
+//	select {}
+
+//	//	sql.Connect()
+//}
 
 /*
 定时读取文件
 */
 func cronFile() {
+	time_interval := util.Param("time_interval")
+	util.PrintLog("time_interval:", time_interval)
+	speci := "*/" + time_interval + " * * * * *"
+	util.PrintLog("spec:", speci)
+
 	c := cron.New()
 	//秒 分 时 日 月 星期
 	//	spec := "0 */1 * * * *" //每分钟一次
@@ -90,13 +94,13 @@ func cronFile() {
 		//读取文件路径
 		path, err := os.Open(FILE_PATH)
 		if err != nil {
-			//			log.Println("open file path error,", err.Error())
+			util.PrintLog("open file path error,", err.Error())
 			return
 		}
 		reader := bufio.NewReader(path)
 		r, _, err := reader.ReadRune()
 		if err != nil {
-			//			log.Println("read rune err:", err.Error())
+			util.PrintLog("read rune err:", err.Error())
 			return
 		}
 		if r != '\uFEFF' {
@@ -104,22 +108,25 @@ func cronFile() {
 		}
 		pathContent, err := reader.ReadString('\n')
 		if err != nil {
-			//			log.Println("read string path error,", err.Error())
+			util.PrintLog("read string path error,", err.Error())
 			return
 		}
-		//		log.Println("pathContent:", pathContent)
+		util.PrintLog("pathContent:", pathContent)
 		pathArray := strings.Split(pathContent, ",")
 		for i := 0; i < len(pathArray); i++ {
 			pathArr := pathArray[0]
 			if i == len(pathArray)-1 {
 				pathArr = pathArray[i][0 : len(pathArray[i])-2]
 			}
-			//			log.Println("pathArr,", pathArr)
+			util.PrintLog("pathArr,", pathArr)
 			fileName := pathArr + FILE_NAME_ARRAY[i]
 			dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
 			readFile(fileName, GROUP_NAME_ARRAY[i], HTTP_URL_FACTORY)
 			readFile(dataName, GROUP_NAME_ARRAY[i], HTTP_URL_HISTORY)
 		}
+	})
+	c.AddFunc(speci, func() {
+		sql.Connect()
 	})
 	c.Start()
 	select {} //阻塞主线程不退出
@@ -134,13 +141,13 @@ func readFile(fileName string, group string, httpUrl string) {
 	//读取文件
 	fd, err := os.Open(fileName)
 	if err != nil {
-		//		log.Println("open file err:", err.Error())
+		util.PrintLog("open file err:", err.Error())
 		return
 	}
 	br := bufio.NewReader(fd)
 	r, _, err := br.ReadRune()
 	if err != nil {
-		//		log.Println("read rune err:", err.Error())
+		util.PrintLog("read rune err:", err.Error())
 		return
 	}
 	if r != '\uFEFF' {
@@ -154,15 +161,13 @@ func readFile(fileName string, group string, httpUrl string) {
 			break
 		}
 	}
-	//	log.Println("fileContent:", fileContent)
-
+	util.PrintLog("fileContent:", fileContent)
 	if fd.Close() != nil {
-		//		log.Println("file.close err:", err.Error())
+		util.PrintLog("file.close err:", err.Error())
 		return
 	}
 	//增加产线
 	fileContent = addGroup(fileContent, group)
-	//	log.Println("after add group fileContent:", fileContent)
 	//解析完成后通过http协议发送到服务端
 	httpPost(fileContent, httpUrl)
 }
@@ -174,13 +179,11 @@ func addGroup(data string, group string) string {
 	var fileContentJson DataJson
 	err := json.Unmarshal([]byte(data), &fileContentJson)
 	if err != nil {
-		//		log.Println("json data invalid")
 		return err.Error()
 	}
 	fileContentJson.Group = group
 	fileContent, err := json.Marshal(fileContentJson)
 	if err != nil {
-		//		log.Println("json to string failed")
 		return err.Error()
 	}
 	//保存
@@ -195,15 +198,14 @@ func httpPost(data string, httpUrl string) {
 	body := bytes.NewBuffer([]byte(data))
 	resp, err := http.Post(httpUrl, HTTP_APPLICATION, body)
 	if err != nil {
-		//		log.Println(err)
+		util.PrintLog(err.Error())
 	}
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		//		log.Println(err)
+		util.PrintLog(err.Error())
 	}
-
-	//	log.Println(string(respBody))
+	util.PrintLog(string(respBody))
 	parseIsForceRefresh(respBody)
 }
 
@@ -214,7 +216,7 @@ func parseIsForceRefresh(response []byte) {
 	var responseJson ResponseJson
 	err := json.Unmarshal(response, &responseJson)
 	if err != nil {
-		//		log.Println(err.Error())
+		util.PrintLog(err.Error())
 		return
 	}
 	var fileContent string = "{\"Class\":\"" + responseJson.Class + "\", \"Time\": \"" + responseJson.Time + "\"}"
@@ -241,11 +243,10 @@ func parseIsForceRefresh(response []byte) {
 写入文件
 */
 func writeFile(fileName string, fileContent string) {
-	//	log.Println("fileName=", fileName, ",fileContent=", fileContent)
 	var d1 = []byte(fileContent)
 	err := ioutil.WriteFile(fileName, d1, 0666) //写入文件(字节数组)
 	if err != nil {
-		//		log.Println(err.Error())
+		util.PrintLog(err.Error())
 		return
 	}
 }
