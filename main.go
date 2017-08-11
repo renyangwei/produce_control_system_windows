@@ -18,16 +18,6 @@ import (
 )
 
 const (
-	//主机地址
-	HTTP_URL_FACTORY string = "http://gzzhizhuo.com:8081/factory"
-	HTTP_URL_HISTORY string = "http://gzzhizhuo.com:8081/history"
-	HTTP_URL_FORCE   string = "http://gzzhizhuo.com:8081/force"
-	//	HTTP_URL_FACTORY string = "http://localhost:8081/factory"
-	//	HTTP_URL_HISTORY string = "http://localhost:8081/history"
-	//	HTTP_URL_FORCE   string = "http://localhost:8081/force"
-
-	HTTP_APPLICATION string = "application/json;charset=utf-8"
-
 	FILE_PATH string = "path.txt"
 )
 
@@ -56,23 +46,6 @@ func main() {
 
 }
 
-///*
-//定时连接数据库
-//*/
-//func cronDatabase() {
-
-//	c := cron.New()
-//	//秒 分 时 日 月 星期
-
-//	c.AddFunc(spec, func() {
-//		sql.Connect()
-//	})
-//	c.Start()
-//	select {}
-
-//	//	sql.Connect()
-//}
-
 /*
 定时读取文件
 */
@@ -85,51 +58,58 @@ func cronFile() {
 	c := cron.New()
 	//秒 分 时 日 月 星期
 	//	spec := "0 */1 * * * *" //每分钟一次
-	spec := "*/5 * * * * *" //每五秒一次
-	c.AddFunc(spec, func() {
-		FILE_NAME_ARRAY := []string{"infor.txt", "infor1.txt", "infor2.txt", "infor3.txt", "infor4.txt", "infor5.txt"}
-		FILE_NAME_DATA_ARRAY := []string{"data.txt", "data1.txt", "data2.txt", "data3.txt", "data4.txt", "data5.txt"}
-		GROUP_NAME_ARRAY := []string{"一号线", "二号线", "三号线", "四号线", "五号线", "六号线"}
-
-		//读取文件路径
-		path, err := os.Open(FILE_PATH)
-		if err != nil {
-			util.PrintLog("open file path error,", err.Error())
-			return
-		}
-		reader := bufio.NewReader(path)
-		r, _, err := reader.ReadRune()
-		if err != nil {
-			util.PrintLog("read rune err:", err.Error())
-			return
-		}
-		if r != '\uFEFF' {
-			reader.UnreadRune() // Not a BOM -- put the rune back
-		}
-		pathContent, err := reader.ReadString('\n')
-		if err != nil {
-			util.PrintLog("read string path error,", err.Error())
-			return
-		}
-		util.PrintLog("pathContent:", pathContent)
-		pathArray := strings.Split(pathContent, ",")
-		for i := 0; i < len(pathArray); i++ {
-			pathArr := pathArray[0]
-			if i == len(pathArray)-1 {
-				pathArr = pathArray[i][0 : len(pathArray[i])-2]
-			}
-			util.PrintLog("pathArr,", pathArr)
-			fileName := pathArr + FILE_NAME_ARRAY[i]
-			dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
-			readFile(fileName, GROUP_NAME_ARRAY[i], HTTP_URL_FACTORY)
-			readFile(dataName, GROUP_NAME_ARRAY[i], HTTP_URL_HISTORY)
-		}
-	})
+	//	spec := "*/5 * * * * *" //每五秒一次
+	//	c.AddFunc(spec, func() {
+	//		initFile()
+	//	})
 	c.AddFunc(speci, func() {
 		sql.Connect()
 	})
 	c.Start()
 	select {} //阻塞主线程不退出
+}
+
+/*
+初始化读取文件
+*/
+func initFile() {
+	FILE_NAME_ARRAY := []string{"infor.txt", "infor1.txt", "infor2.txt", "infor3.txt", "infor4.txt", "infor5.txt"}
+	FILE_NAME_DATA_ARRAY := []string{"data.txt", "data1.txt", "data2.txt", "data3.txt", "data4.txt", "data5.txt"}
+	GROUP_NAME_ARRAY := []string{"一号线", "二号线", "三号线", "四号线", "五号线", "六号线"}
+
+	//读取文件路径
+	path, err := os.Open(FILE_PATH)
+	if err != nil {
+		util.PrintLog("open file path error,", err.Error())
+		return
+	}
+	reader := bufio.NewReader(path)
+	r, _, err := reader.ReadRune()
+	if err != nil {
+		util.PrintLog("read rune err:", err.Error())
+		return
+	}
+	if r != '\uFEFF' {
+		reader.UnreadRune() // Not a BOM -- put the rune back
+	}
+	pathContent, err := reader.ReadString('\n')
+	if err != nil {
+		util.PrintLog("read string path error,", err.Error())
+		return
+	}
+	util.PrintLog("pathContent:", pathContent)
+	pathArray := strings.Split(pathContent, ",")
+	for i := 0; i < len(pathArray); i++ {
+		pathArr := pathArray[0]
+		if i == len(pathArray)-1 {
+			pathArr = pathArray[i][0 : len(pathArray[i])-2]
+		}
+		util.PrintLog("pathArr,", pathArr)
+		fileName := pathArr + FILE_NAME_ARRAY[i]
+		dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
+		readFile(fileName, GROUP_NAME_ARRAY[i], util.GetFactoryUrl())
+		readFile(dataName, GROUP_NAME_ARRAY[i], util.GetHistoryUrl())
+	}
 }
 
 /*
@@ -196,7 +176,7 @@ func addGroup(data string, group string) string {
 */
 func httpPost(data string, httpUrl string) {
 	body := bytes.NewBuffer([]byte(data))
-	resp, err := http.Post(httpUrl, HTTP_APPLICATION, body)
+	resp, err := http.Post(httpUrl, util.HTTP_APPLICATION, body)
 	if err != nil {
 		util.PrintLog(err.Error())
 	}

@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"strconv"
-	"strings"
 	"time"
 
 	_ "github.com/mattn/go-adodb"
@@ -22,6 +21,7 @@ var (
 	databases   string
 	server_name string
 	rows_limit  string
+	group       string
 
 	cname string
 )
@@ -51,9 +51,6 @@ func NewMssql() *Mssql {
 		// windows: true 为windows身份验证，false 必须设置sa账号和密码
 		windows: local,
 		sa: &SA{
-			//			user:   "sa",
-			//			passwd: "123456",
-			//			port:   1433,
 			user:   user,
 			passwd: pwd,
 			port:   port,
@@ -96,7 +93,7 @@ func (m *Mssql) SelectCompany() {
 读取并发送订单资料
 */
 func (m *Mssql) SelectOrder() {
-	rows, err := m.Query("select mxbh,khjc,zbdh,klzhdh,xdzd,pcsl=(ddsl-tlsl),zbcd2,ks,finishtime,ddsm from xddmx where zt in (1,2) and ddsl-isnull(tlsl,0)>0 and isnull(cczt,0)<9 order by zt desc,scxh,zdxh,zbxh,zd desc,zbdh,khbh,zbcd desc")
+	rows, err := m.Query("select top " + rows_limit + " a.scxh,a.mxbh,a.khjc,zbdh=left(rtrim(a.zbdh)+'--------------',7*c.zlbhcd),a.klzhdh,a.zd,a.zbcd,pcsl=a.ddsl-isnull(a.tlsl,0),a.ddsm,a.zt,a.ks, a.sm2,a.zbcd2,xbmm=round((a.zd-a.jbkd)*10/c.convertvalue,0),a.scbh,ms=round((a.ddsl-a.tlsl)*a.zbcd/(c.convertvalue*100),0),a.finishtime from xddmx a,xtsz c where a.zt in (1,2) and a.ddsl-isnull(a.tlsl,0)>0 and isnull(a.cczt,0)<9 order by a.zt desc,a.scxh,a.zdxh,a.zbxh,a.zd desc,a.zbdh,a.khbh,a.zbcd desc")
 	if err != nil {
 		util.PrintLog("select query err: %s\n", err)
 		return
@@ -121,24 +118,25 @@ func (m *Mssql) SelectOrder() {
 		)
 		rows.Scan(&mxbh, &khjc, &zbdh, &klzhdh, &xdzd, &pscl, &zbcd, &ks, &finish_time, &ddms)
 		var order util.Order
-		order.Mxbh = strings.Replace(mxbh, " ", "", -1)
-		order.Khjc = strings.Replace(khjc, " ", "", -1)
-		order.Zbdh = strings.Replace(zbdh, " ", "", -1)
-		order.Klzhdh = strings.Replace(klzhdh, " ", "", -1)
-		order.Xdzd = strings.Replace(xdzd, " ", "", -1)
-		order.Pscl = strings.Replace(pscl, " ", "", -1)
-		order.Zbcd = strings.Replace(zbcd, " ", "", -1)
-		order.Ks = strings.Replace(ks, " ", "", -1)
+		order.Mxbh = util.Trim(mxbh)
+		order.Khjc = util.Trim(khjc)
+		order.Zbdh = util.Trim(zbdh)
+		order.Klzhdh = util.Trim(klzhdh)
+		order.Xdzd = util.Trim(xdzd)
+		order.Pscl = util.Trim(pscl)
+		order.Zbcd = util.Trim(zbcd)
+		order.Ks = util.Trim(ks)
 		order.Finish_time = finish_time
-		order.Ddms = strings.Replace(ddms, " ", "", -1)
+		order.Ddms = util.Trim(ddms)
 		orderJson, err := json.Marshal(order)
 		if err != nil {
 			util.PrintLog(err.Error())
 			return
 		}
 		var normalData util.NormarData
-		normalData.Cname = strings.Replace(cname, " ", "", -1)
+		normalData.Cname = util.Trim(cname)
 		normalData.Data = string(orderJson)
+		normalData.Group = group
 		normalDatas = append(normalDatas, normalData)
 	}
 	datasJson, err := json.Marshal(normalDatas)
@@ -178,23 +176,24 @@ func (m *Mssql) selectFinishInfo() {
 		)
 		rows.Scan(&mxbh, &khjc, &zbdh, &zbkd, &hgpsl, &blpsl, &pcsl, &zbcd, &start_time, &finish_time)
 		var finishInfo util.FinishInfo
-		finishInfo.Mxbh = strings.Replace(mxbh, " ", "", -1)
-		finishInfo.Khjc = strings.Replace(khjc, " ", "", -1)
-		finishInfo.Zbdh = strings.Replace(zbdh, " ", "", -1)
-		finishInfo.Hgpsl = strings.Replace(hgpsl, " ", "", -1)
-		finishInfo.Blpsl = strings.Replace(blpsl, " ", "", -1)
-		finishInfo.Pcsl = strings.Replace(pcsl, " ", "", -1)
-		finishInfo.Zbcd = strings.Replace(zbcd, " ", "", -1)
+		finishInfo.Mxbh = util.Trim(mxbh)
+		finishInfo.Khjc = util.Trim(khjc)
+		finishInfo.Zbdh = util.Trim(zbdh)
+		finishInfo.Hgpsl = util.Trim(hgpsl)
+		finishInfo.Blpsl = util.Trim(blpsl)
+		finishInfo.Pcsl = util.Trim(pcsl)
+		finishInfo.Zbcd = util.Trim(zbcd)
 		finishInfoJson, err := json.Marshal(finishInfo)
 		if err != nil {
 			util.PrintLog("marshal json err:", err.Error())
 			return
 		}
 		var normalData util.NormarData
-		normalData.Cname = strings.Replace(cname, " ", "", -1)
+		normalData.Cname = util.Trim(cname)
 		normalData.Data = string(finishInfoJson)
 		normalData.StartTime = start_time
 		normalData.FinishTime = finish_time
+		normalData.Group = group
 		normalDatas = append(normalDatas, normalData)
 	}
 	datasJson, err := json.Marshal(normalDatas)
@@ -208,7 +207,7 @@ func (m *Mssql) selectFinishInfo() {
 /*
 连接sqlserver
 */
-func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port int, _rows_limit string) {
+func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port int, _rows_limit, _group string) {
 
 	host = _host
 	user = _user
@@ -217,6 +216,7 @@ func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port 
 	databases = _database
 	server_name = _server_name
 	rows_limit = _rows_limit
+	group = _group
 
 	mssql := NewMssql()
 	err := mssql.Open()

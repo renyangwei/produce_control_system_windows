@@ -4,6 +4,7 @@ package sql
 import (
 	"PaperManagementClient/util"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -34,5 +35,13 @@ func Connect() {
 		util.PrintLog("params port err:", err.Error())
 		return
 	}
-	ConnectSqlServer(host_, user_, pwd_, database_, server_name_, iport, rows_limit_)
+	//读取不同的数据库
+	dbs := strings.Split(database_, ",")
+	util.PrintLog("dbs:", dbs)
+	for _, db := range dbs {
+		dbg := strings.Split(db, ":")
+		if !strings.EqualFold(dbg[0], "") && !strings.EqualFold(dbg[1], "") {
+			ConnectSqlServer(host_, user_, pwd_, dbg[0], server_name_, iport, rows_limit_, dbg[1])
+		}
+	}
 }

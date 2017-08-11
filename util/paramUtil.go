@@ -17,7 +17,7 @@ func init() {
 	for _, str := range array {
 		if strings.Contains(str, "debug") && !strings.Contains(str, "#") {
 			arr := strings.Split(str, "=")
-			Debug = trim(arr[1])
+			Debug = Trim(arr[1])
 		}
 	}
 }
@@ -29,7 +29,7 @@ func Param(params string) string {
 	for _, str := range array {
 		if strings.Contains(str, params) && !strings.Contains(str, "#") {
 			arr := strings.Split(str, "=")
-			return trim(arr[1])
+			return Trim(arr[1])
 		}
 	}
 	return ""
@@ -38,8 +38,9 @@ func Param(params string) string {
 /*
 去掉空格和回车符号
 */
-func trim(old string) string {
+func Trim(old string) string {
 	newStr := strings.Replace(old, "\r", "", -1)
 	newStr = strings.Replace(newStr, "\n", "", -1)
+	newStr = strings.Replace(newStr, " ", "", -1)
 	return newStr
 }

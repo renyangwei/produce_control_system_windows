@@ -16,6 +16,7 @@ type NormarData struct {
 	Data       string    `json:"data"`
 	StartTime  time.Time `json:"StartTime"`  //开始时间
 	FinishTime time.Time `json:"FinishTime"` //完工时间
+	Group      string    `json:"Group"`      //产线
 }
 
 /*
@@ -45,21 +46,15 @@ type FinishInfo struct {
 	Hgpsl string `json:"Hgpsl"` //合格数
 	Blpsl string `json:"Blpsl"` //不良数
 	Pcsl  string `json:"Pcsl"`  //排产数
-	Zbcd  string `json:Zbcd""`  //切长
+	Zbcd  string `json:"Zbcd"`  //切长
 }
-
-const (
-	HTTP_URL_ORDER       string = "http://gzzhizhuo.com:8081/order"
-	HTTP_URL_FINISH_INFO string = "http://gzzhizhuo.com:8081/finish_info"
-	HTTP_APPLICATION     string = "application/json;charset=utf-8"
-)
 
 /*
 发送订单
 */
 func PostOrder(data string) {
 	PrintLog("post order")
-	post(HTTP_URL_ORDER, data)
+	post(GetOrderUrl(), data)
 }
 
 /*
@@ -67,7 +62,7 @@ func PostOrder(data string) {
 */
 func PostFinihInfo(data string) {
 	PrintLog("post finish_info")
-	post(HTTP_URL_FINISH_INFO, data)
+	post(GetFinishInfoUrl(), data)
 }
 
 func post(httpUrl string, data string) {
