@@ -93,7 +93,9 @@ func (m *Mssql) SelectCompany() {
 读取并发送订单资料
 */
 func (m *Mssql) SelectOrder() {
-	rows, err := m.Query("select top " + rows_limit + " a.scxh,a.mxbh,a.khjc,zbdh=left(rtrim(a.zbdh)+'--------------',7*c.zlbhcd),a.klzhdh,a.zd,a.zbcd,pcsl=a.ddsl-isnull(a.tlsl,0),a.ddsm,a.zt,a.ks, a.sm2,a.zbcd2,xbmm=round((a.zd-a.jbkd)*10/c.convertvalue,0),a.scbh,ms=round((a.ddsl-a.tlsl)*a.zbcd/(c.convertvalue*100),0),a.finishtime from xddmx a,xtsz c where a.zt in (1,2) and a.ddsl-isnull(a.tlsl,0)>0 and isnull(a.cczt,0)<9 order by a.zt desc,a.scxh,a.zdxh,a.zbxh,a.zd desc,a.zbdh,a.khbh,a.zbcd desc")
+	var sqlSyn = "select top " + rows_limit + " a.scxh,a.mxbh,a.khjc,zbdh=left(rtrim(a.zbdh)+'--------------',7*c.zlbhcd),a.klzhdh,a.zd,a.zbcd,pcsl=a.ddsl-isnull(a.tlsl,0),a.ddsm,a.zt,a.ks, a.sm2,a.zbcd2,xbmm=round((a.zd-a.jbkd)*10/c.convertvalue,0),a.scbh,ms=round((a.ddsl-a.tlsl)*a.zbcd/(c.convertvalue*100),0),a.finishtime from xddmx a,xtsz c where a.zt in (1,2) and a.ddsl-isnull(a.tlsl,0)>0 and isnull(a.cczt,0)<9 order by a.zt desc,a.scxh,a.zdxh,a.zbxh,a.zd desc,a.zbdh,a.khbh,a.zbcd desc"
+	util.PrintLog("sql:" + sqlSyn)
+	rows, err := m.Query(sqlSyn)
 	if err != nil {
 		util.PrintLog("select query err: %s\n", err)
 		return
@@ -105,29 +107,43 @@ func (m *Mssql) SelectOrder() {
 	var normalDatas []util.NormarData
 	for rows.Next() {
 		var (
-			mxbh        string    //订单号
-			khjc        string    //客户简称
-			zbdh        string    //材质
-			klzhdh      string    //楞别
-			xdzd        string    //纸度
-			pscl        string    //排产数量
-			zbcd        string    //切长
-			ks          string    //剖
+			scxh        string //序号
+			mxbh        string //订单号
+			khjc        string //客户简称
+			zbdh        string //材质
+			klzhdh      string //楞别
+			zd          string //纸度
+			zbcd        string //切长
+			pscl        string //排产数量
+			ddms        string //留言
+			zt          string
+			ks          string //剖
+			sm2         string
+			zbcd2       string
+			xbmm        string
+			scbh        string
+			ms          string
 			finish_time time.Time //预计完工时间
-			ddms        string    //留言
 		)
-		rows.Scan(&mxbh, &khjc, &zbdh, &klzhdh, &xdzd, &pscl, &zbcd, &ks, &finish_time, &ddms)
+		rows.Scan(&scxh, &mxbh, &khjc, &zbdh, &klzhdh, &zd, &zbcd, &pscl, &ddms, &zt, &ks, &sm2, &zbcd2, &xbmm, &scbh, &ms, &finish_time)
 		var order util.Order
+		order.Scxh = util.Trim(scxh)
 		order.Mxbh = util.Trim(mxbh)
 		order.Khjc = util.Trim(khjc)
 		order.Zbdh = util.Trim(zbdh)
 		order.Klzhdh = util.Trim(klzhdh)
-		order.Xdzd = util.Trim(xdzd)
-		order.Pscl = util.Trim(pscl)
+		order.Zd = util.Trim(zd)
 		order.Zbcd = util.Trim(zbcd)
-		order.Ks = util.Trim(ks)
-		order.Finish_time = finish_time
+		order.Pscl = util.Trim(pscl)
 		order.Ddms = util.Trim(ddms)
+		order.Zt = util.Trim(zt)
+		order.Ks = util.Trim(ks)
+		order.Sm2 = util.Trim(sm2)
+		order.Zbcd2 = util.Trim(zbcd2)
+		order.Xbmm = util.Trim(xbmm)
+		order.Scbh = util.Trim(scbh)
+		order.Ms = util.Trim(ms)
+		order.Finish_time = finish_time
 		orderJson, err := json.Marshal(order)
 		if err != nil {
 			util.PrintLog(err.Error())
