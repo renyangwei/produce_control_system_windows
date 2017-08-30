@@ -64,6 +64,9 @@ func cronFile() {
 	c.AddFunc(speci, func() {
 		sql.Connect()
 	})
+	c.AddFunc(speci, func() {
+		sql.ReadSearchRequest()
+	})
 	c.Start()
 	select {} //阻塞主线程不退出
 }
