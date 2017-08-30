@@ -3,6 +3,7 @@ package sql
 
 import (
 	"PaperManagementClient/util"
+	"encoding/json"
 	"strconv"
 	"strings"
 )
@@ -29,6 +30,16 @@ func init() {
 	Debug = util.Param("debug")
 }
 
+type SearchRequestStruct struct {
+	Type  string //搜索类型:order,finish_info
+	Cname string //公司名
+	Group string //产线
+	Info  string //搜索内容
+}
+
+/*
+连接数据库
+*/
 func Connect() {
 	iport, err := strconv.Atoi(port_)
 	if err != nil {
@@ -44,4 +55,25 @@ func Connect() {
 			ConnectSqlServer(host_, user_, pwd_, dbg[0], server_name_, iport, rows_limit_, dbg[1])
 		}
 	}
+}
+
+/*
+读取搜索参数
+*/
+func ReadSearchRequest() {
+	searchRequest := util.GetSearchRequest()
+	//解析数据
+	var searchRequestStruct SearchRequestStruct
+	err := json.Unmarshal([]byte(searchRequest), &searchRequestStruct)
+	if err != nil {
+		util.PrintLog("ReadSearchRequest, unmarshal search request err:", err)
+		return
+	}
+	//根据type到数据里搜索
+	if searchRequestStruct.Type == "order" {
+		//搜索订单
+	} else if searchRequestStruct.Type == "finish_info" {
+		//搜索完工资料
+	}
+
 }

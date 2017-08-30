@@ -72,6 +72,25 @@ func PostFinihInfo(data string) {
 	post(GetFinishInfoUrl(), data)
 }
 
+/*
+获取搜索内容
+*/
+func GetSearchRequest() string {
+	PrintLog("get search request")
+	get(GetSearchRequest())
+}
+
+/*
+发送搜索结果
+*/
+func PostSearchRequest(data string) {
+	PrintLog("post search request")
+	post(GetSearchRequest(), data)
+}
+
+/*
+post数据
+*/
 func post(httpUrl string, data string) {
 	body := bytes.NewBuffer([]byte(data))
 	PrintLog("body:", body)
@@ -85,4 +104,22 @@ func post(httpUrl string, data string) {
 		PrintLog("resp err:", err)
 	}
 	PrintLog("resp:", string(respBody))
+}
+
+/*
+get数据
+*/
+func get(httpUrl string) string {
+	resp, err := http.Get(httpUrl)
+	if err != nil {
+		PrintLog("get search request err:", err)
+		return
+	}
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		PrintLog("resp err:", err)
+	}
+	PrintLog("resp:", string(respBody))
+	return string(respBody)
 }
