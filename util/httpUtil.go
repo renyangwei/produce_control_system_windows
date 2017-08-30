@@ -46,14 +46,24 @@ type Order struct {
 完工数据
 */
 type FinishInfo struct {
-	Mxbh  string `json:"Mxbh"`  //订单号
-	Khjc  string `json:"Khjc"`  //客户简称
-	Zbdh  string `json:"Zbdh"`  //材质
-	Zbkd  string `json:"Zbkd"`  //纸板宽
-	Hgpsl string `json:"Hgpsl"` //合格数
-	Blpsl string `json:"Blpsl"` //不良数
-	Pcsl  string `json:"Pcsl"`  //排产数
-	Zbcd  string `json:"Zbcd"`  //切长
+	Mxbh     string `json:"Mxbh"`     //订单号
+	Khjc     string `json:"Khjc"`     //客户简称
+	Ms       string `json:"Ms"`       //米数
+	Bzbh     string `json:"Bzbh"`     //班组
+	Zbmc     string `json:"Zbmd"`     //材质
+	Klzhdh   string `json:"Klzhdh"`   //楞别
+	Zd       string `json:"Zd"`       //门幅
+	Pcsl     string `json:"Pcsl"`     //排产数
+	Hgpsl    string `json:"Hgpsl"`    //合格数
+	Blpsl    string `json:"Blpsl"`    //不良数
+	Xbmm     string `json:"Xbmm"`     //修边
+	Zbcd2    string `json:"Zbcd2"`    //切长
+	Ks       string `json:"Ks"`       //板宽
+	Js       string `json:"Js"`       //机速
+	StopTime string `json:"StopTime"` //停时
+	StopSpec string `json:"StopSpec"` //停次
+	Ys       string `json:"Ys"`       //用时
+	Shl      string `json:"Shl"`      //损耗
 }
 
 /*

@@ -57,7 +57,6 @@ func cronFile() {
 
 	c := cron.New()
 	//秒 分 时 日 月 星期
-	//	spec := "0 */1 * * * *" //每分钟一次
 	//	spec := "*/5 * * * * *" //每五秒一次
 	//	c.AddFunc(spec, func() {
 	//		initFile()

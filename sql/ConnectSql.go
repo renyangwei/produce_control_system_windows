@@ -167,7 +167,7 @@ func (m *Mssql) SelectOrder() {
 读取并发送完工资料
 */
 func (m *Mssql) selectFinishInfo() {
-	rows, err := m.Query("select top " + rows_limit + " mxbh,khjc,zbbh,zbkd,hgpsl,blpsl,pcsl,zbcd,starttime,finishtime from finish where hgpsl>0 or blpsl>0 order by finishtime desc")
+	rows, err := m.Query("select top " + rows_limit + " a.mxbh, a.khjc,a.pcsl,a.hgpsl,a.blpsl,a.zd,a.zbmc,a.zbcd,xdzd=a.zbkd/a.ks,xbmm=round((a.zd-a.zbkd)*10/b.convertvalue,0),a.klzhdh,a.ks,a.stoptime,a.stopspec,a.bzbh,a.starttime,a.finishtime,ys=case when convert(char(19),a.starttime,21)<convert(char(19),a.finishtime,21) then  datediff(s,a.starttime,a.finishtime)  else  0  end,  a.zbcd2,shl=case when (a.hgpsl+a.blpsl)>0 then str(round(a.blpsl*100.0/(a.hgpsl+a.blpsl),2),4,2)+'%' else '0%' end,js=case when convert(char(19),a.starttime,21)<convert(char(19),a.finishtime,21) then round(60*a.zbcd*(a.hgpsl+a.blpsl)/(100*b.convertvalue)/datediff(s,a.starttime,a.finishtime),0) else 0 End,ms=round(a.zbcd*a.hgpsl/(100*b.convertvalue),0) from finish a,xtsz b where convert(char(19),a.starttime,21)>='2000-01-01' and convert(char(19),a.finishtime,21)<= '2050-08-19' and isnull(a.pcsl,0)>0 and a.khjc<>'' order by a.finishtime desc,a.starttime desc,a.scxh desc")
 	if err != nil {
 		util.PrintLog("select query err:", err)
 		return
@@ -179,26 +179,49 @@ func (m *Mssql) selectFinishInfo() {
 	var normalDatas []util.NormarData
 	for rows.Next() {
 		var (
-			mxbh        string    //订单号
-			khjc        string    //客户简称
-			zbdh        string    //材质
-			zbkd        string    //纸板宽
-			hgpsl       string    //合格数
-			blpsl       string    //不良数
-			pcsl        string    //排产数
-			zbcd        string    //切长
+			mxbh        string //订单编号
+			khjc        string //客户简称
+			pcsl        string //排产数
+			hgpsl       string //合格数
+			blpsl       string //不良数
+			zd          string
+			zbmc        string
+			zbcd        string //切长
+			xdzd        string
+			xbmm        string
+			klzhdh      string
+			ks          string
+			stop_time   string
+			stop_spec   string
+			bzbh        string
 			start_time  time.Time //开始时间
 			finish_time time.Time //完工时间
+			ys          string
+			zbcd2       string
+			shl         string
+			js          string
+			ms          string
 		)
-		rows.Scan(&mxbh, &khjc, &zbdh, &zbkd, &hgpsl, &blpsl, &pcsl, &zbcd, &start_time, &finish_time)
+		rows.Scan(&mxbh, &khjc, &pcsl, &hgpsl, &blpsl, &zd, &zbmc, &zbcd, &xdzd, &xbmm, &klzhdh, &ks, &stop_time, &stop_spec, &bzbh, &start_time, &finish_time, &ys, &zbcd2, &shl, &js, &ms)
 		var finishInfo util.FinishInfo
 		finishInfo.Mxbh = util.Trim(mxbh)
 		finishInfo.Khjc = util.Trim(khjc)
-		finishInfo.Zbdh = util.Trim(zbdh)
+		finishInfo.Pcsl = util.Trim(pcsl)
 		finishInfo.Hgpsl = util.Trim(hgpsl)
 		finishInfo.Blpsl = util.Trim(blpsl)
-		finishInfo.Pcsl = util.Trim(pcsl)
-		finishInfo.Zbcd = util.Trim(zbcd)
+		finishInfo.Zd = util.Trim(zd)
+		finishInfo.Zbmc = util.Trim(zbmc)
+		finishInfo.Xbmm = util.Trim(xbmm)
+		finishInfo.Klzhdh = util.Trim(klzhdh)
+		finishInfo.Ks = util.Trim(ks)
+		finishInfo.StopTime = util.Trim(stop_time)
+		finishInfo.StopSpec = util.Trim(stop_spec)
+		finishInfo.Bzbh = util.Trim(bzbh)
+		finishInfo.Zbcd2 = util.Trim(zbcd2)
+		finishInfo.Ys = util.Trim(ys)
+		finishInfo.Shl = util.Trim(shl)
+		finishInfo.Js = util.Trim(js)
+		finishInfo.Ms = util.Trim(ms)
 		finishInfoJson, err := json.Marshal(finishInfo)
 		if err != nil {
 			util.PrintLog("marshal json err:", err.Error())
