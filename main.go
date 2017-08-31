@@ -61,9 +61,9 @@ func cronFile() {
 	//	c.AddFunc(spec, func() {
 	//		initFile()
 	//	})
-	c.AddFunc(speci, func() {
-		sql.Connect()
-	})
+	//	c.AddFunc(speci, func() {
+	//		sql.Connect()
+	//	})
 	c.AddFunc(speci, func() {
 		sql.ReadSearchRequest()
 	})

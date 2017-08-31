@@ -83,3 +83,15 @@ func GetSearchRequestUrl() string {
 		return HTTP_REMOTE_HOST + "/search/request"
 	}
 }
+
+func GetSearchResultUrl() string {
+	if local_test == "" {
+		local_test = Param("local_test")
+		PrintLog("GetSearchRequestUrl, local_test", local_test)
+	}
+	if local_test == "0" {
+		return HTTP_LOCAL_HOST + "/search/result"
+	} else {
+		return HTTP_REMOTE_HOST + "/search/result"
+	}
+}
