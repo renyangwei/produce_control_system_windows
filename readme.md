@@ -1,44 +1,77 @@
-## 使用说明 ##
-
+# 生管系统客户端程序使用说明 #
 
 > 所有的文件都请使用notepad++打开，安装文件在打包文档中。举例：打开app.conf文件的方式为：右键app.conf文件，选择**Edit with notepad++** ,修改完成后保存退出。
 
-### apk文件 ###
+## 文件目录 ##
 
-将 **PaperManagement.apk** 文件复制到Android手机，找到文件并安装，首次运行APP，弹出对话框提示“请输入名称”，输入“纸箱厂”，点击确定可以看到数据，app会自动刷新，右上角有倒计时，点击按钮可以停止/启动自动刷新功能
+![目录文件](https://i.imgur.com/5ALAMMo.png)
 
-### PaperManagementClient.exe文件 ###
+### test目录 ###
 
-将**infor.txt**文件和**PaperManagementClientTest.exe**放到一个目录下，双击exe文件运行
+该目录存放**infor.txt**和**data.txt**文件，前者表示实时数据，后者表示历史数据，正常情况下都由生管系统自动生成，这里用于测试。
 
-### infor文件 ###
+> infor.txt表示一号线的实时数据，infor1.txt表示二号线的实时数据,依次类推。
 
-**infor.txt**文件中的数据表示实时数据，修改**infor.txt**文件中**Factory**和**Other**对应的数据（数据格式不能变），保存，看到**PaperManagementClientTest.exe**的窗口中提示**post success**后，等待APP自动刷新，就能看到修改后的数据，**infor.txt** 代表 **一号线**， **infor1.txt** 代表**二号线**，以此类推
+### path.txt ###
 
-### data文件 ###
+指定infor.txt和data.txt文件的路径，每个路径表示一条产线，比如:
 
-**data.txt**文件中的数据表示历史数据，修改**data.txt**中的数据，保存，看到 **PaperManagementClientTest.exe**的窗口中提示**post success**后，进入APP中**历史数据**界面，可以查询对应时间、产线和班组的数据。**data.txt** 代表 **一号线**， **data1.txt** 代表 **二号线**， 以此类推
+    test\,test\
 
-### 手动刷新功能 ###
-
-在APP的**历史数据**界面中，长按**查询**，弹出对话框提示 **系统将重新读取数据，耗时较长**，点击确认即可手动刷新，如果在5秒内刷新失败，用户可以稍后再次查询。用户确定手动刷新后PaperManagementClientTest.exe程序目录下会生成location.txt文件，生管系统读取文件内容，将数据写入对应的**data.txt** 中
-
-### path文件 ###
-
-PaperManagementClientTest.exe程序读取**data.txt**和**infor.txt**的路径，每个路径之间用逗号隔开，最后一个路径后加上回车符号
+表示现在有两条产线，每条产线路径之间用逗号隔开，请在最后一个路径后加上**回车符号**。
 
 ### app.conf文件 ###
 
-生管系统客户端配置文件，请用**notepad++** 打开。
+生管系统客户端配置文件，配置如下：
+
+|配置参数         |说明                      |
+|----------------|--------------------------|
+| host           | 数据库主机地址            |
+| user           | 数据库用户名，默认sa用户   |
+| pwd            | 数据库密码，密码为空则不填  |
+| port           | 数据库监听端口,默认1433    |
+| database       | 数据库名称，冒号后对应产线，多条产线之间用逗号分割|
+| server_name    | 数据库实例名称，默认MSSQLSERVER |
+| time_interval  | 轮询时间间隔，单位：秒，默认5秒  |
+| debug          | 调试模式,是否开启日志,0开启,1关闭，默认0|
+| rows_limit     | 客户端每次查询订单和完工资料的条数，显示在订单或者完工资料界面，默认10条 |
+| local_test     | 本地测试,0开启,1关闭,默认1，请不要修改|
+
+请根据实际情况修改配置
+
+### 生管系统.apk ###
+
+生管系统 Android应用文件，在Android手机上打开文件即可安装。
 
 ### PaperManagementClientTest.exe ###
 
-生管系统客户端测试程序，可修改app.conf文件修改配置。
+生管系统客户端程序，打开会日志窗口，一般用于测试。
+
+![运行窗口](https://i.imgur.com/5qNNhdI.png)
 
 ### PaperManagementClientBkg.exe ###
 
-生管系统客户端后台运行程序，双击可在后台运行。
+生管系统客户端正式程序，用于后台运行
 
-### windows系统开机启动客户端 ###
+## 运行生管系统客户端 ##
 
-单击“开始→程序”，你会发现一个“启动”菜单，这就是最经典的Windows启动位置，右击“启动”菜单选择“打开”即可将其打开，其中的程序和快捷方式都会在系统启动时自动运行。右键“新建”-“快捷方式”，选择要启动的文件即可。
+### 测试 ###
+
+1. 根据实际情况配置**app.conf**参数;
+2. 保证有可以访问的数据，如何安装SQLserver并导入数据请自行百度；
+3. 将**infor.txt**文件中**Factory**对应的数据改成数据库中的厂家名称（数据格式不能变），保存；
+4. 将**data.txt**文件中**Factory**对应的数据改成数据库中的厂家名称（数据格式不能变），保存；
+5. 双击运行**PaperManagementClientTest.exe**文件;
+6. 打开生管系统APP，提示输入厂家名称，点击确定，看到数据表示成功。
+
+### 正式运行 ###
+
+1. 根据实际情况配置**app.conf**参数;
+2. 配置**path.txt**文件中的路径；
+3. 双击运行**PaperManagementClientTest.exe**文件;
+4. 打开生管系统APP，提示输入厂家名称，点击确定，看到数据表示成功；
+5. 关闭窗口，修改**app.conf**中的**debug**参数为1；
+6. 双击**PaperManagementClientBkg.exe**文件（双击后没有任何反应）,然后打开任务管理器 -> 进程，看到 **PaperManagementClientBkg.exe\*32** 表示运行成功（如图）;
+7. 设置开机启动:单击“开始→程序”，你会发现一个“启动”菜单，右击“启动”菜单选择“打开”即可将其打开，其中的程序和快捷方式都会在系统启动时自动运行,右键“新建”-“快捷方式”，选择要启动的文件。
+
+![后台运行](https://i.imgur.com/HlFO18k.png)
