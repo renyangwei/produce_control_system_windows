@@ -57,13 +57,13 @@ func cronFile() {
 
 	c := cron.New()
 	//秒 分 时 日 月 星期
-	//	spec := "*/5 * * * * *" //每五秒一次
-	//	c.AddFunc(spec, func() {
-	//		initFile()
-	//	})
-	//	c.AddFunc(speci, func() {
-	//		sql.Connect()
-	//	})
+	spec := "*/5 * * * * *" //每五秒一次
+	c.AddFunc(spec, func() {
+		initFile()
+	})
+	c.AddFunc(speci, func() {
+		sql.Connect()
+	})
 	c.AddFunc(speci, func() {
 		sql.ReadSearchRequest()
 	})
