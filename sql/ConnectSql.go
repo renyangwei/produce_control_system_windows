@@ -120,7 +120,7 @@ func (m *Mssql) selectOrder(sqlSyn string) string {
 			zbcd2       string
 			xbmm        string
 			scbh        string
-			ms          string
+			ms          float64
 			finish_time string //预计完工时间
 		)
 		rows.Scan(&scxh, &mxbh, &khjc, &zbdh, &klzhdh, &zd, &zbcd, &pscl, &ddms, &zt, &ks, &sm2, &zbcd2, &xbmm, &scbh, &ms, &finish_time)
@@ -140,7 +140,7 @@ func (m *Mssql) selectOrder(sqlSyn string) string {
 		order.Zbcd2 = util.Trim(zbcd2)
 		order.Xbmm = util.Trim(xbmm)
 		order.Scbh = util.Trim(scbh)
-		order.Ms = util.Trim(ms)
+		order.Ms = ms
 		order.Finish_time = finish_time
 		orderJson, err := json.Marshal(order)
 		if err != nil {
