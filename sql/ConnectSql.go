@@ -308,6 +308,10 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 		util.PrintLog("ReadSearchRequest, unmarshal search request err:", err)
 		return
 	}
+	if searchRequestStruct.Group != _group {
+		util.PrintLog("searchRequestStruct.Group:", searchRequestStruct.Group, ",group:", _group)
+		return
+	}
 	err = mssql.Open()
 	if err != nil {
 		util.PrintLog(err)

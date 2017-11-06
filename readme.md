@@ -30,14 +30,46 @@
 | user           | 数据库用户名，默认sa用户   |
 | pwd            | 数据库密码，密码为空则不填  |
 | port           | 数据库监听端口,默认1433    |
-| database       | 数据库名称，冒号后对应产线，多条产线之间用逗号分割|
+| database       | 数据库，name表示数据库名称， group表示对应的产线|
 | server_name    | 数据库实例名称，默认MSSQLSERVER |
 | time_interval  | 轮询时间间隔，单位：秒，默认5秒  |
 | debug          | 调试模式,是否开启日志,0开启,1关闭，默认0|
 | rows_limit     | 客户端每次查询订单和完工资料的条数，显示在订单或者完工资料界面，默认10条 |
 | local_test     | 本地测试,0开启,1关闭,默认1，请不要修改|
 
-请根据实际情况修改配置
+
+实例：
+
+    {
+	"server": [{
+		"host": "192.168.15.128",
+		"user": "sa",
+		"pwd": "123456",
+		"port": 1433,
+		"server_name":"MSSQLSERVER",
+		"database": [{
+			"name": "scgl",
+			"group": "一号线"
+		}]
+	},
+	{
+		"host": "localhost",
+		"user": "sa",
+		"pwd": "123456",
+		"port": 1433,
+		"server_name":"MSSQLSERVER",
+		"database": [{
+			"name": "scgl-1",
+			"group": "二号线"
+		}]
+	}],
+	"time_interval": 5,
+	"debug": 0,
+	"rows_limit": 10,
+	"local_test": 1
+    }
+
+**说明**：请根据实际情况修改配置，可以配置多个主机地址，每个主机上可以配置多个数据库，注意**group**字段不要重复
 
 ### 生管系统.apk ###
 

@@ -50,7 +50,7 @@ func main() {
 定时读取文件
 */
 func cronFile() {
-	time_interval := util.Param("time_interval")
+	time_interval := util.ParamTimeInterval()
 	util.PrintLog("time_interval:", time_interval)
 	speci := "*/" + time_interval + " * * * * *"
 	util.PrintLog("spec:", speci)

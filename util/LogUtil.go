@@ -11,7 +11,7 @@ import (
 */
 func PrintLog(v ...interface{}) {
 	//	log.Println("debug:", Debug)
-	if strings.EqualFold(Debug, "0") {
+	if strings.EqualFold(ParamDebug(), "0") {
 		log.Println(v)
 	}
 }
