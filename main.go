@@ -195,8 +195,31 @@ func httpPost(data string, httpUrl string) {
 增加判断返回内容
 */
 func parseIsForceRefresh(response []byte) {
+	//读取文件路径
+	path, err := os.Open(FILE_PATH)
+	if err != nil {
+		util.PrintLog("open file path error,", err.Error())
+		return
+	}
+	reader := bufio.NewReader(path)
+	r, _, err := reader.ReadRune()
+	if err != nil {
+		util.PrintLog("read rune err:", err.Error())
+		return
+	}
+	if r != '\uFEFF' {
+		reader.UnreadRune() // Not a BOM -- put the rune back
+	}
+	pathContent, err := reader.ReadString('\n')
+	if err != nil {
+		util.PrintLog("read string path error,", err.Error())
+		return
+	}
+	util.PrintLog("parseIsForceRefresh pathContent:", pathContent)
+	pathArray := strings.Split(pathContent, ",")
+
 	var responseJson ResponseJson
-	err := json.Unmarshal(response, &responseJson)
+	err = json.Unmarshal(response, &responseJson)
 	if err != nil {
 		util.PrintLog(err.Error())
 		return
@@ -206,17 +229,39 @@ func parseIsForceRefresh(response []byte) {
 	//判断文件名
 	switch responseJson.Group {
 	case "一号线":
-		fileName = "location.txt"
+		if len(pathArray) > 0 {
+			fileName = pathArray[0] + "location.txt"
+		}
 	case "二号线":
-		fileName = "location1.txt"
+		if len(pathArray) > 1 {
+			fileName = pathArray[1] + "location1.txt"
+		} else {
+			fileName = pathArray[0] + "location1.txt"
+		}
 	case "三号线":
-		fileName = "location2.txt"
+		if len(pathArray) > 2 {
+			fileName = pathArray[2] + "location2.txt"
+		} else {
+			fileName = pathArray[0] + "location2.txt"
+		}
 	case "四号线":
-		fileName = "location3.txt"
+		if len(pathArray) > 3 {
+			fileName = pathArray[3] + "location3.txt"
+		} else {
+			fileName = pathArray[0] + "location3.txt"
+		}
 	case "五号线":
-		fileName = "location4.txt"
+		if len(pathArray) > 4 {
+			fileName = pathArray[4] + "location4.txt"
+		} else {
+			fileName = pathArray[0] + "location4.txt"
+		}
 	case "六号线":
-		fileName = "location5.txt"
+		if len(pathArray) > 5 {
+			fileName = pathArray[5] + "location5.txt"
+		} else {
+			fileName = pathArray[0] + "location5.txt"
+		}
 	}
 	writeFile(fileName, fileContent)
 }
@@ -225,6 +270,7 @@ func parseIsForceRefresh(response []byte) {
 写入文件
 */
 func writeFile(fileName string, fileContent string) {
+	util.PrintLog("writeFile, fileName:", fileName)
 	var d1 = []byte(fileContent)
 	err := ioutil.WriteFile(fileName, d1, 0666) //写入文件(字节数组)
 	if err != nil {
