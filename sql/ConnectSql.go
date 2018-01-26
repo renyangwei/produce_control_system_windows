@@ -20,7 +20,7 @@ var (
 	databases   string
 	server_name string
 	rows_limit  string
-	group       string
+	//	group       string
 
 	cname string
 )
@@ -91,7 +91,7 @@ func (m *Mssql) selectCompany() {
 /*
 读取并发送订单资料
 */
-func (m *Mssql) selectOrder(sqlSyn string) string {
+func (m *Mssql) selectOrder(sqlSyn, gup string) string {
 	util.PrintLog("order sql:" + sqlSyn)
 	rows, err := m.Query(sqlSyn)
 	if err != nil {
@@ -150,7 +150,7 @@ func (m *Mssql) selectOrder(sqlSyn string) string {
 		var normalData util.NormarData
 		normalData.Cname = util.Trim(cname)
 		normalData.Data = string(orderJson)
-		normalData.Group = group
+		normalData.Group = gup
 		normalDatas = append(normalDatas, normalData)
 	}
 	datasJson, err := json.Marshal(normalDatas)
@@ -164,7 +164,7 @@ func (m *Mssql) selectOrder(sqlSyn string) string {
 /*
 读取并发送完工资料
 */
-func (m *Mssql) selectFinishInfo(sqlSyn string) string {
+func (m *Mssql) selectFinishInfo(sqlSyn, gup string) string {
 	util.PrintLog("finish info sqlSyn:", sqlSyn)
 	rows, err := m.Query(sqlSyn)
 	if err != nil {
@@ -231,7 +231,7 @@ func (m *Mssql) selectFinishInfo(sqlSyn string) string {
 		normalData.Data = string(finishInfoJson)
 		normalData.StartTime = start_time
 		normalData.FinishTime = finish_time
-		normalData.Group = group
+		normalData.Group = gup
 		normalDatas = append(normalDatas, normalData)
 	}
 	datasJson, err := json.Marshal(normalDatas)
@@ -254,7 +254,6 @@ func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port 
 	databases = _database
 	server_name = _server_name
 	rows_limit = _rows_limit
-	group = _group
 
 	mssql := NewMssql()
 	err := mssql.Open()
@@ -262,13 +261,15 @@ func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port 
 		util.PrintLog(err)
 		return
 	}
+	//连接上数据库再赋值
+	//group = _group
 
 	mssql.selectCompany()
-	orderData := mssql.selectOrder(orderSqlSyn)
+	orderData := mssql.selectOrder(orderSqlSyn, _group)
 	if orderData != "" {
 		util.PostOrder(orderData)
 	}
-	finishInfoData := mssql.selectFinishInfo(finishInfoSqlSyn)
+	finishInfoData := mssql.selectFinishInfo(finishInfoSqlSyn, _group)
 	if finishInfoData != "" {
 		util.PostFinihInfo(finishInfoData)
 	}
@@ -285,7 +286,6 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 	databases = _database
 	server_name = _server_name
 	rows_limit = _rows_limit
-	group = _group
 
 	mssql := NewMssql()
 	if cname == "" {
@@ -300,6 +300,9 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 		util.PrintLog("cname is empty")
 		return
 	}
+	//连接上再赋值
+	//	group = _group
+
 	searchRequest := util.GetSearchRequest(util.Trim(cname))
 	//解析数据
 	var searchRequestStruct SearchRequestStruct
@@ -320,8 +323,8 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 	//根据type到数据里搜索
 	if searchRequestStruct.Type == "order" {
 		//搜索订单
-		var sqlSyn = "select a.scxh,a.mxbh,a.khjc,zbdh=left(rtrim(a.zbdh)+'--------------',7*c.zlbhcd),a.klzhdh,a.zd,a.zbcd,pcsl=a.ddsl-isnull(a.tlsl,0),a.ddsm,a.zt,a.ks, a.sm2,a.zbcd2,xbmm=round((a.zd-a.jbkd)*10/c.convertvalue,0),scbh=isnull(a.scbh,''),ms=round((a.ddsl-a.tlsl)*a.zbcd/(c.convertvalue*100),0),a.finishtime from xddmx a,xtsz c where a.zt in (1,2) and a.ddsl-isnull(a.tlsl,0)>0 and isnull(a.cczt,0)<9 and (mxbh like '%" + searchRequestStruct.Data + "%' or upper(khjc) like '%" + searchRequestStruct.Data + "%' or lower(khjc) like '%" + searchRequestStruct.Data + "%' or zbcd2 like '%" + searchRequestStruct.Data + "%') order by a.zt desc,a.scxh,a.zdxh,a.zbxh,a.zd desc,a.zbdh,a.khbh,a.zbcd desc"
-		searchOrderData := mssql.selectOrder(sqlSyn)
+		var sqlSyn = "select a.scxh,a.mxbh,a.khjc,zbdh=left(rtrim(a.zbdh)+'--------------',7*c.zlbhcd),a.klzhdh,a.zd,a.zbcd,pcsl=a.ddsl-isnull(a.tlsl,0),a.ddsm,a.zt,a.ks, a.sm2,a.zbcd2,xbmm=round((a.zd-a.jbkd)*10/c.convertvalue,0),scbh=isnull(a.scbh,''),ms=((a.ddsl-a.tlsl)*a.zbcd)/(c.convertvalue),a.finishtime from xddmx a,xtsz c where a.zt in (1,2) and a.ddsl-isnull(a.tlsl,0)>0 and isnull(a.cczt,0)<9 and (upper(mxbh) like '%" + searchRequestStruct.Data + "%' or lower(mxbh) like '%" + searchRequestStruct.Data + "%' or upper(khjc) like '%" + searchRequestStruct.Data + "%' or lower(khjc) like '%" + searchRequestStruct.Data + "%' or zbcd2 like '%" + searchRequestStruct.Data + "%') order by a.zt desc,a.scxh,a.zdxh,a.zbxh,a.zd desc,a.zbdh,a.khbh,a.zbcd desc"
+		searchOrderData := mssql.selectOrder(sqlSyn, _group)
 		if searchOrderData != "" {
 			//发送到服务器
 			util.PrintLog("searchOrderData:", searchOrderData)
@@ -329,8 +332,8 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 		}
 	} else if searchRequestStruct.Type == "finish_info" {
 		//搜索完工资料
-		var finishInfoSqlSyn = "select a.mxbh, a.khjc,a.pcsl,a.hgpsl,a.blpsl,a.zd,a.zbmc,a.zbcd,xdzd=a.zbkd/a.ks,xbmm=round((a.zd-a.zbkd)*10/b.convertvalue,0),a.klzhdh,a.ks,a.stoptime,a.stopspec,a.bzbh,a.starttime,a.finishtime,ys=case when convert(char(19),a.starttime,21)<convert(char(19),a.finishtime,21) then  datediff(s,a.starttime,a.finishtime)  else  0  end,  a.zbcd2,shl=case when (a.hgpsl+a.blpsl)>0 then str(round(a.blpsl*100.0/(a.hgpsl+a.blpsl),2),4,2)+'%' else '0%' end,js=case when convert(char(19),a.starttime,21)<convert(char(19),a.finishtime,21) then round(60*a.zbcd*(a.hgpsl+a.blpsl)/(100*b.convertvalue)/datediff(s,a.starttime,a.finishtime),0) else 0 End,ms=round(a.zbcd*a.hgpsl/(100*b.convertvalue),0) from finish a,xtsz b where convert(char(19),a.starttime,21)>='" + searchRequestStruct.StartTime + "' and convert(char(19),a.finishtime,21)<= '" + searchRequestStruct.FinishTime + "' and (mxbh like '%" + searchRequestStruct.Data + "%' or upper(khjc) like '%" + searchRequestStruct.Data + "%' or lower(khjc) like '%" + searchRequestStruct.Data + "%' or zbcd2 like '%" + searchRequestStruct.Data + "%') and isnull(a.pcsl,0)>0 and a.khjc<>'' order by a.finishtime desc,a.starttime desc,a.scxh desc"
-		var finishInfoData = mssql.selectFinishInfo(finishInfoSqlSyn)
+		var finishInfoSqlSyn = "select a.mxbh, a.khjc,a.pcsl,a.hgpsl,a.blpsl,a.zd,a.zbmc,a.zbcd,xdzd=a.zbkd/a.ks,xbmm=round((a.zd-a.zbkd)*10/b.convertvalue,0),a.klzhdh,a.ks,a.stoptime,a.stopspec,a.bzbh,a.starttime,a.finishtime,ys=case when convert(char(19),a.starttime,21)<convert(char(19),a.finishtime,21) then  datediff(s,a.starttime,a.finishtime)  else  0  end,  a.zbcd2,shl=case when (a.hgpsl+a.blpsl)>0 then str(round(a.blpsl*100.0/(a.hgpsl+a.blpsl),2),4,2)+'%' else '0%' end,js=case when convert(char(19),a.starttime,21)<convert(char(19),a.finishtime,21) then round(60*a.zbcd*(a.hgpsl+a.blpsl)/(100*b.convertvalue)/datediff(s,a.starttime,a.finishtime),0) else 0 End,ms=round(a.zbcd*a.hgpsl/(100*b.convertvalue),0) from finish a,xtsz b where convert(char(19),a.starttime,21)>='" + searchRequestStruct.StartTime + "' and convert(char(19),a.finishtime,21)<= '" + searchRequestStruct.FinishTime + "' and (upper(mxbh) like '%" + searchRequestStruct.Data + "%' or lower(mxbh) like '%" + searchRequestStruct.Data + "%' or upper(khjc) like '%" + searchRequestStruct.Data + "%' or lower(khjc) like '%" + searchRequestStruct.Data + "%' or zbcd2 like '%" + searchRequestStruct.Data + "%') and isnull(a.pcsl,0)>0 and a.khjc<>'' order by a.finishtime desc,a.starttime desc,a.scxh desc"
+		var finishInfoData = mssql.selectFinishInfo(finishInfoSqlSyn, _group)
 		if finishInfoData != "" {
 			util.PrintLog("finishInfoData", finishInfoData)
 			//发送到服务器

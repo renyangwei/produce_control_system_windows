@@ -18,6 +18,7 @@ type AppConf struct {
 	DebugMode    int  `json:"debug"`
 	RowsLimit    int  `json:"rows_limit"`
 	LocalTest    int  `json:"local_test"`
+	UdpPort      int  `json:"udp_port"`
 }
 
 type Db struct {
@@ -103,6 +104,11 @@ func ParamRowsLimit() string {
 */
 func ParamLocalTest() string {
 	return strconv.Itoa(appConf.LocalTest)
+}
+
+//获得UDP端口号
+func ParamUdpPort() string {
+	return strconv.Itoa(appConf.UdpPort)
 }
 
 /*
