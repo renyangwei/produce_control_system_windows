@@ -341,4 +341,10 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 		}
 	}
 
+/*
+查询历史订单
+*/
+func QueryHistoryData() {
+	
+}
 }

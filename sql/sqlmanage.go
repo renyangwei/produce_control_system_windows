@@ -40,7 +40,7 @@ type SearchRequestStruct struct {
 }
 
 /*
-连接数据库
+连接数据库,读取订单和完工资料
 */
 func Connect() {
 	//	iport, err := strconv.Atoi(port_)
