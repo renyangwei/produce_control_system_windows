@@ -3,6 +3,7 @@ package util
 
 import (
 	"io/ioutil"
+	"log"
 )
 
 func OpenAppConf() string {
@@ -11,6 +12,6 @@ func OpenAppConf() string {
 		PrintLog("read app.conf err:", err.Error())
 	}
 	fileContent := string(fileContentByte)
-	PrintLog(fileContent)
+	log.Println(fileContent)
 	return fileContent
 }

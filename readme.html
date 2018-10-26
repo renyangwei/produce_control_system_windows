@@ -296,18 +296,7 @@ img {
 <p>所有的文件都请使用notepad++打开，安装文件在打包文档中。举例：打开app.conf文件的方式为：右键app.conf文件，选择<strong>Edit with notepad++</strong> ,修改完成后保存退出。</p>
 </blockquote>
 <h2>文件目录</h2>
-<p><img src="https://i.imgur.com/5ALAMMo.png" alt="目录文件" /></p>
-<h3>test目录</h3>
-<p>该目录存放<strong>infor.txt</strong>和<strong>data.txt</strong>文件，前者表示实时数据，后者表示历史数据，正常情况下都由生管系统自动生成，这里用于测试。</p>
-<blockquote>
-<p>infor.txt表示一号线的实时数据，infor1.txt表示二号线的实时数据,依次类推。</p>
-</blockquote>
-<h3>path.txt</h3>
-<p>指定infor.txt和data.txt文件的路径，每个路径表示一条产线，比如:</p>
-<pre><code>test\,test\
-</code></pre>
-
-<p>表示现在有两条产线，每条产线路径之间用逗号隔开，请在最后一个路径后加上<strong>回车符号</strong>。</p>
+<p><img src="https://i.imgur.com/GxwjRMK.png" /></p>
 <h3>app.conf文件</h3>
 <p>生管系统客户端配置文件，配置如下：</p>
 <table>
@@ -358,6 +347,10 @@ img {
 	<td>local_test</td>
 	<td>本地测试,0开启,1关闭,默认1，请不要修改</td>
 </tr>
+<tr>
+	<td>udp_port</td>
+	<td>udp监听端口，用于监听生管系统发送的实时数据，注意发送的数据必须是<strong>utf-8</strong>格式</td>
+</tr>
 </tbody>
 </table>
 <p>实例：</p>
@@ -391,7 +384,7 @@ img {
 }
 </code></pre>
 
-<p><strong>说明</strong>：请根据实际情况修改配置，可以配置多个主机地址，每个主机上可以配置多个数据库，注意<strong>group</strong>字段不要重复</p>
+<p><strong>说明</strong>：请根据实际情况修改配置，可以配置多个主机地址，每个主机上可以配置多个数据库，注意<strong>group字段不要重复</strong></p>
 <h3>生管系统.apk</h3>
 <p>生管系统 Android应用文件，在Android手机上打开文件即可安装。</p>
 <h3>PaperManagementClientTest.exe</h3>
@@ -404,15 +397,12 @@ img {
 <ol>
 <li>根据实际情况配置<strong>app.conf</strong>参数;</li>
 <li>保证有可以访问的数据，如何安装SQLserver并导入数据请自行百度；</li>
-<li>将<strong>infor.txt</strong>文件中<strong>Factory</strong>对应的数据改成数据库中的厂家名称（数据格式不能变），保存；</li>
-<li>将<strong>data.txt</strong>文件中<strong>Factory</strong>对应的数据改成数据库中的厂家名称（数据格式不能变），保存；</li>
 <li>双击运行<strong>PaperManagementClientTest.exe</strong>文件;</li>
-<li>打开生管系统APP，提示输入厂家名称，点击确定，看到数据表示成功。</li>
+<li>打开生管系统APP，提示输入厂家名称,比如：测试，点击确定，看到数据表示成功。</li>
 </ol>
 <h3>正式运行</h3>
 <ol>
 <li>根据实际情况配置<strong>app.conf</strong>参数;</li>
-<li>配置<strong>path.txt</strong>文件中的路径；</li>
 <li>双击运行<strong>PaperManagementClientTest.exe</strong>文件;</li>
 <li>打开生管系统APP，提示输入厂家名称，点击确定，看到数据表示成功；</li>
 <li>关闭窗口，修改<strong>app.conf</strong>中的<strong>debug</strong>参数为1；</li>
@@ -420,6 +410,21 @@ img {
 <li>设置开机启动:单击“开始→程序”，你会发现一个“启动”菜单，右击“启动”菜单选择“打开”即可将其打开，其中的程序和快捷方式都会在系统启动时自动运行,右键“新建”-“快捷方式”，选择要启动的文件。</li>
 </ol>
 <p><img src="https://i.imgur.com/HlFO18k.png" alt="后台运行" /></p>
+<h2>资源地址</h2>
+<ul>
+<li>
+<p>windows server 2008 操作系统 迅雷下载地址：
+ed2k://|file|cn_windows_server_2008_r2_standard_enterprise_datacenter_and_web_with_sp1_x64_dvd_617598.iso|3368839168|D282F613A80C2F45FF23B79212A3CF67|/</p>
+</li>
+<li>
+<p>sql server 2008 数据库 迅雷下载地址：
+ed2k://|file|cn_sql_server_2008_r2_enterprise_x86_x64_ia64_dvd_522233.iso|4662884352|1DB025218B01B48C6B76D6D88630F541|/</p>
+</li>
+<li>
+<p>windows sql server 2008 远程连接配置：
+https://jingyan.baidu.com/article/6c67b1d6ca06f02787bb1ed1.html</p>
+</li>
+</ul>
 
 </body>
 </html>

@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -41,13 +40,12 @@ type ResponseJson struct {
 var factoryName string
 
 func main() {
-
-	//	cronFile()
-
-	util.StartListenUdp(func(udpString string) {
+	go util.StartListenUdp(func(udpString string) {
 		//然后发送到服务器
 		httpPost(udpString, util.GetFactoryUrl())
 	})
+
+	cronFile()
 }
 
 /*
@@ -56,129 +54,18 @@ func main() {
 func cronFile() {
 	time_interval := util.ParamTimeInterval()
 	util.PrintLog("time_interval:", time_interval)
+	//秒 分 时 日 月 星期
 	speci := "*/" + time_interval + " * * * * *"
 	util.PrintLog("spec:", speci)
-
 	c := cron.New()
-	//秒 分 时 日 月 星期
-	//	spec := "*/5 * * * * *" //每五秒一次
-	//	c.AddFunc(speci, func() {
-	//		initFile()
-	//	})
 	c.AddFunc(speci, func() {
 		sql.Connect()
 	})
 	c.AddFunc(speci, func() {
 		sql.ReadSearchRequest()
 	})
-	c.AddFunc(speci, func() {
-		//查询是不是要搜索历史数据
-
-	})
 	c.Start()
 	select {} //阻塞主线程不退出
-}
-
-/*
-初始化读取文件
-*/
-func initFile() {
-	FILE_NAME_ARRAY := []string{"infor.txt", "infor1.txt", "infor2.txt", "infor3.txt", "infor4.txt", "infor5.txt"}
-	FILE_NAME_DATA_ARRAY := []string{"data.txt", "data1.txt", "data2.txt", "data3.txt", "data4.txt", "data5.txt"}
-	GROUP_NAME_ARRAY := []string{"一号线", "二号线", "三号线", "四号线", "五号线", "六号线"}
-
-	//读取文件路径
-	path, err := os.Open(FILE_PATH)
-	if err != nil {
-		util.PrintLog("open file path error,", err.Error())
-		return
-	}
-	reader := bufio.NewReader(path)
-	r, _, err := reader.ReadRune()
-	if err != nil {
-		util.PrintLog("read rune err:", err.Error())
-		return
-	}
-	if r != '\uFEFF' {
-		reader.UnreadRune() // Not a BOM -- put the rune back
-	}
-	pathContent, err := reader.ReadString('\n')
-	if err != nil {
-		util.PrintLog("read string path error,", err.Error())
-		return
-	}
-	util.PrintLog("pathContent:", pathContent)
-	pathArray := strings.Split(pathContent, ",")
-	for i := 0; i < len(pathArray); i++ {
-		pathArr := pathArray[0]
-		if i == len(pathArray)-1 {
-			pathArr = pathArray[i][0 : len(pathArray[i])-2]
-		}
-		util.PrintLog("pathArr,", pathArr)
-		fileName := pathArr + FILE_NAME_ARRAY[i]
-		dataName := pathArr + FILE_NAME_DATA_ARRAY[i]
-		readFile(fileName, GROUP_NAME_ARRAY[i], util.GetFactoryUrl())
-		readFile(dataName, GROUP_NAME_ARRAY[i], util.GetHistoryUrl())
-	}
-}
-
-/*
-读取文件
-fileName	文件名
-group		班组
-*/
-func readFile(fileName string, group string, httpUrl string) {
-	//读取文件
-	fd, err := os.Open(fileName)
-	if err != nil {
-		util.PrintLog("open file err:", err.Error())
-		return
-	}
-	br := bufio.NewReader(fd)
-	r, _, err := br.ReadRune()
-	if err != nil {
-		util.PrintLog("read rune err:", err.Error())
-		return
-	}
-	if r != '\uFEFF' {
-		br.UnreadRune() // Not a BOM -- put the rune back
-	}
-	fileContent := ""
-	for {
-		str, err := br.ReadString('\n')
-		fileContent = fileContent + str
-		if err == io.EOF {
-			break
-		}
-	}
-	util.PrintLog("fileContent:", fileContent)
-	if fd.Close() != nil {
-		util.PrintLog("file.close err:", err.Error())
-		return
-	}
-	//增加产线
-	fileContent = addGroup(fileContent, group)
-	//解析完成后通过http协议发送到服务端
-	httpPost(fileContent, httpUrl)
-}
-
-/*
-添加产线
-*/
-func addGroup(data string, group string) string {
-	var fileContentJson DataJson
-	err := json.Unmarshal([]byte(data), &fileContentJson)
-	if err != nil {
-		return err.Error()
-	}
-	fileContentJson.Group = group
-	fileContent, err := json.Marshal(fileContentJson)
-	if err != nil {
-		return err.Error()
-	}
-	//保存
-	factoryName = fileContentJson.Factory
-	return string(fileContent)
 }
 
 /*

@@ -66,6 +66,48 @@ type FinishInfo struct {
 }
 
 /*
+历史数据
+*/
+type HistroyStruct struct {
+	Factory string `json:"Factory"` //厂家名称
+	Time    string `json:"Time"`    //时间
+	Class   string `json:"Class"`   //班组
+	Group   string `json:"Group"`   //产线
+	Other   string `json:"Other"`
+}
+
+/*
+历史数据中的Other字段
+*/
+type OtherStruct struct {
+	Qsrq  string `json:"Qsrq"`  //开工时间
+	Jzrq  string `json:"Jzrq"`  //完成时间
+	Tjsj  string `json:"Tjsj"`  //停机时间
+	Pjjs  string `json:"Pjjs"`  //平均车速
+	Pjzd  string `json:"Pjzd"`  //平均门幅
+	Dds   string `json:"Dds"`   //订单笔数
+	Hlcs  string `json:"Hlcs"`  //换楞次数
+	Zms   string `json:"Zms"`   //累计米数
+	Zhgms string `json:"zhgms"` //合格米数
+	Zmj   string `json:"Zmj"`   //累计面积
+	Zhgmj string `json:"Zhgmj"` //合格面积
+	Tjcs  string `json:"Tjcs"`  //停机次数
+	Zzl   string `json:"Zzl"`   //累计重量
+	Hgzl  string `json:"Hgzl"`  //合格重量
+	Zxbmj string `json:"Zxbmj"` //累计修边（m2）
+	Zxbzl string `json:"Zxbzl"` //累计修边(kg)
+	Xbbl  string `json:"Xbbl"`  //修边比例
+}
+
+/*
+发送历史数据
+*/
+func PostHistory(data string) string {
+	PrintLog("post history data")
+	return post(GetHistoryUrl(), data)
+}
+
+/*
 发送订单
 */
 func PostOrder(data string) {
@@ -101,7 +143,7 @@ func PostSearchResult(data string) {
 /*
 post数据
 */
-func post(httpUrl string, data string) {
+func post(httpUrl string, data string) string {
 	body := bytes.NewBuffer([]byte(data))
 	PrintLog("body:", body)
 	PrintLog("httpUrl:", httpUrl)
@@ -114,7 +156,9 @@ func post(httpUrl string, data string) {
 	if err != nil {
 		PrintLog("resp err:", err)
 	}
-	PrintLog("resp:", string(respBody))
+	var respBodyStr = string(respBody)
+	PrintLog("resp:", respBodyStr)
+	return respBodyStr
 }
 
 /*

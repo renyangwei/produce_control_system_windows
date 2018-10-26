@@ -4,21 +4,7 @@
 
 ## 文件目录 ##
 
-![目录文件](https://i.imgur.com/5ALAMMo.png)
-
-### test目录 ###
-
-该目录存放**infor.txt**和**data.txt**文件，前者表示实时数据，后者表示历史数据，正常情况下都由生管系统自动生成，这里用于测试。
-
-> infor.txt表示一号线的实时数据，infor1.txt表示二号线的实时数据,依次类推。
-
-### path.txt ###
-
-指定infor.txt和data.txt文件的路径，每个路径表示一条产线，比如:
-
-    test\,test\
-
-表示现在有两条产线，每条产线路径之间用逗号隔开，请在最后一个路径后加上**回车符号**。
+![](https://i.imgur.com/GxwjRMK.png)
 
 ### app.conf文件 ###
 
@@ -36,7 +22,7 @@
 | debug          | 调试模式,是否开启日志,0开启,1关闭，默认0|
 | rows_limit     | 客户端每次查询订单和完工资料的条数，显示在订单或者完工资料界面，默认10条 |
 | local_test     | 本地测试,0开启,1关闭,默认1，请不要修改|
-
+| udp_port		 | udp监听端口，用于监听生管系统发送的实时数据，注意发送的数据必须是**utf-8**格式 |
 
 实例：
 
@@ -69,7 +55,7 @@
 	"local_test": 1
     }
 
-**说明**：请根据实际情况修改配置，可以配置多个主机地址，每个主机上可以配置多个数据库，注意**group**字段不要重复
+**说明**：请根据实际情况修改配置，可以配置多个主机地址，每个主机上可以配置多个数据库，注意**group字段不要重复**
 
 ### 生管系统.apk ###
 
@@ -91,19 +77,29 @@
 
 1. 根据实际情况配置**app.conf**参数;
 2. 保证有可以访问的数据，如何安装SQLserver并导入数据请自行百度；
-3. 将**infor.txt**文件中**Factory**对应的数据改成数据库中的厂家名称（数据格式不能变），保存；
-4. 将**data.txt**文件中**Factory**对应的数据改成数据库中的厂家名称（数据格式不能变），保存；
-5. 双击运行**PaperManagementClientTest.exe**文件;
-6. 打开生管系统APP，提示输入厂家名称，点击确定，看到数据表示成功。
+3. 双击运行**PaperManagementClientTest.exe**文件;
+4. 打开生管系统APP，提示输入厂家名称,比如：测试，点击确定，看到数据表示成功。
 
 ### 正式运行 ###
 
 1. 根据实际情况配置**app.conf**参数;
-2. 配置**path.txt**文件中的路径；
-3. 双击运行**PaperManagementClientTest.exe**文件;
-4. 打开生管系统APP，提示输入厂家名称，点击确定，看到数据表示成功；
-5. 关闭窗口，修改**app.conf**中的**debug**参数为1；
-6. 双击**PaperManagementClientBkg.exe**文件（双击后没有任何反应）,然后打开任务管理器 -> 进程，看到 **PaperManagementClientBkg.exe\*32** 表示运行成功（如图）;
-7. 设置开机启动:单击“开始→程序”，你会发现一个“启动”菜单，右击“启动”菜单选择“打开”即可将其打开，其中的程序和快捷方式都会在系统启动时自动运行,右键“新建”-“快捷方式”，选择要启动的文件。
+2. 双击运行**PaperManagementClientTest.exe**文件;
+3. 打开生管系统APP，提示输入厂家名称，点击确定，看到数据表示成功；
+4. 关闭窗口，修改**app.conf**中的**debug**参数为1；
+5. 双击**PaperManagementClientBkg.exe**文件（双击后没有任何反应）,然后打开任务管理器 -> 进程，看到 **PaperManagementClientBkg.exe\*32** 表示运行成功（如图）;
+6. 设置开机启动:单击“开始→程序”，你会发现一个“启动”菜单，右击“启动”菜单选择“打开”即可将其打开，其中的程序和快捷方式都会在系统启动时自动运行,右键“新建”-“快捷方式”，选择要启动的文件。
 
 ![后台运行](https://i.imgur.com/HlFO18k.png)
+
+## 资源地址 ##
+- windows server 2008 操作系统 迅雷下载地址：
+ed2k://|file|cn_windows_server_2008_r2_standard_enterprise_datacenter_and_web_with_sp1_x64_dvd_617598.iso|3368839168|D282F613A80C2F45FF23B79212A3CF67|/
+
+- sql server 2008 数据库 迅雷下载地址：
+ed2k://|file|cn_sql_server_2008_r2_enterprise_x86_x64_ia64_dvd_522233.iso|4662884352|1DB025218B01B48C6B76D6D88630F541|/
+
+- windows sql server 2008 远程连接配置：
+https://jingyan.baidu.com/article/6c67b1d6ca06f02787bb1ed1.html
+
+
+

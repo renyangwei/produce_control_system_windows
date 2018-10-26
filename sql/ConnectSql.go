@@ -39,6 +39,14 @@ type SA struct {
 	port   int
 }
 
+//返回数据
+type HistoryResponseJson struct {
+	Factory string `json:"Factory"`
+	Group   string `json:"Group"`
+	Class   string `json:"Class"`
+	Time    string `json:"Time"`
+}
+
 func NewMssql() *Mssql {
 	mssql := new(Mssql)
 	dataS := host + "\\" + server_name
@@ -245,7 +253,7 @@ func (m *Mssql) selectFinishInfo(sqlSyn, gup string) string {
 /*
 连接sqlserver
 */
-func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port int, _rows_limit, _group, orderSqlSyn, finishInfoSqlSyn string) {
+func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port int, _rows_limit, _group, orderSqlSyn, finishInfoSqlSyn, historySqlSyn string) {
 
 	host = _host
 	user = _user
@@ -273,6 +281,7 @@ func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port 
 	if finishInfoData != "" {
 		util.PostFinihInfo(finishInfoData)
 	}
+	mssql.queryHistoryData(historySqlSyn, _group)
 }
 
 /*
@@ -340,11 +349,124 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 			util.PostSearchResult(finishInfoData)
 		}
 	}
+}
 
 /*
 查询历史订单
 */
-func QueryHistoryData() {
-	
+func (m *Mssql) queryHistoryData(sqlSyn, gup string) {
+	util.PrintLog("history sqlSyn:", sqlSyn)
+	rows, err := m.Query(sqlSyn)
+	if err != nil {
+		util.PrintLog("select query err:", err)
+		return
+	}
+	if cname == "" {
+		util.PrintLog("cname is empty")
+		return
+	}
+	for rows.Next() {
+		var (
+			Qsrq  string //开工时间
+			Jzrq  string //完成时间
+			Tjsj  string //停机时间
+			Pjjs  string //平均车速
+			Pjzd  string //平均门幅
+			Dds   string //订单笔数
+			Hlcs  string //换楞次数
+			Zms   string //累计米数
+			Zhgms string //合格米数
+			Zmj   string //累计面积
+			Zhgmj string //合格面积
+			Tjcs  string //停机次数
+			Zzl   string //累计重量
+			Hgzl  string //合格重量
+			Zxbmj string //累计修边(m2)
+			Zxbzl string //累计修边(kg)
+			Xbbl  string //修边比例
+			Bzbh  string //班组
+			Rq    string //日期
+		)
+		rows.Scan(&Qsrq, &Jzrq, &Tjsj, &Pjjs, &Pjzd, &Dds, &Hlcs, &Zms, &Zhgms, &Zmj, &Zhgmj, &Tjcs, &Zzl, &Hgzl, &Zxbmj, &Zxbzl, &Xbbl, &Bzbh, &Rq)
+		var histroyOther util.OtherStruct
+		histroyOther.Qsrq = Qsrq
+		histroyOther.Jzrq = Jzrq
+		histroyOther.Tjsj = Tjsj
+		histroyOther.Pjjs = Pjjs
+		histroyOther.Dds = Dds
+		histroyOther.Hlcs = Hlcs
+		histroyOther.Zms = Zms
+		histroyOther.Zhgms = Zhgms
+		histroyOther.Zmj = Zmj
+		histroyOther.Zhgmj = Zhgmj
+		histroyOther.Tjcs = Tjcs
+		histroyOther.Zzl = Zzl
+		histroyOther.Hgzl = Hgzl
+		histroyOther.Zxbmj = Zxbmj
+		histroyOther.Zxbzl = Zxbzl
+		histroyOther.Xbbl = Xbbl
+		histroyOther.Pjzd = Pjzd
+		util.PrintLog("query histroy:", histroyOther)
+		//拼接成发送的数据
+		var hisStruct util.HistroyStruct
+		hisStruct.Factory = cname
+		hisStruct.Class = Bzbh
+		hisStruct.Group = gup
+		hisStruct.Time = Rq
+		hisStruct.Other = getHistoryOther(histroyOther)
+		//发送到服务端
+		hisJson, err := json.Marshal(hisStruct)
+		if err != nil {
+			util.PrintLog("marshl json err:", err.Error())
+			return
+		}
+		var resp = util.PostHistory(string(hisJson))
+		mashalPostHistory(resp)
+	}
 }
+
+/*
+解析发送历史数据的返回内容
+*/
+func mashalPostHistory(resp string) {
+	var responseJson HistoryResponseJson
+	err := json.Unmarshal([]byte(resp), &responseJson)
+	if err != nil {
+		util.PrintLog(err.Error())
+		return
+	}
+	//然后到数据库里查询搜索结果
+	mssql := NewMssql()
+	err = mssql.Open()
+	if err != nil {
+		util.PrintLog(err)
+		return
+	}
+	mssql.selectCompany()
+	//sql 语句
+	var historySql = "select qsrq, jzrq, tjsj, pjjs, pjzd, dds, hlcs, zms, zhgms, zmj, zhgmj, tjcs, zzl, hgzl, zxbmj, zxbzl, xbbl from schzb where bzbh='" + responseJson.Class + "' and rq='" + responseJson.Time + "'"
+	mssql.queryHistoryData(historySql, responseJson.Group)
+}
+
+func getHistoryOther(otherStruct util.OtherStruct) string {
+	var other string
+	other = other + "开工时间=" + otherStruct.Qsrq + "&"
+	other = other + "完成时间=" + otherStruct.Jzrq + "&"
+	other = other + "停机时间=" + otherStruct.Tjsj + "&"
+	other = other + "平均车速=" + otherStruct.Pjjs + "&"
+	other = other + "平均门幅=" + otherStruct.Pjzd + "&"
+	other = other + "订单笔数=" + otherStruct.Dds + "&"
+	other = other + "换楞次数=" + otherStruct.Hlcs + "&"
+	other = other + "累计米数=" + otherStruct.Zms + "&"
+	other = other + "合格米数=" + otherStruct.Zhgms + "&"
+	other = other + "累计面积=" + otherStruct.Zmj + "&"
+	other = other + "合格面积=" + otherStruct.Zhgmj + "&"
+	other = other + "停机次数=" + otherStruct.Tjcs + "&"
+	other = other + "累计重量=" + otherStruct.Zzl + "&"
+	other = other + "合格重量=" + otherStruct.Hgzl + "&"
+	other = other + "累计修边(m2)=" + otherStruct.Zxbmj + "&"
+	other = other + "累计修边(kg)=" + otherStruct.Zxbzl + "&"
+	other = other + "修边比例=" + otherStruct.Xbbl
+	util.PrintLog("History other:", other)
+	return other
 }
