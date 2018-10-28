@@ -43,7 +43,7 @@ func Connect() {
 }
 
 /*
-读取搜索参数,基本上忘记了这里的逻辑
+搜索参数
 */
 func ReadSearchRequest() {
 	for _, db := range dbs {
