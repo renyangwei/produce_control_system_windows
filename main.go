@@ -10,8 +10,8 @@ import (
 	"os"
 	"strings"
 
-	"PaperManagementClient/sql"
-	"PaperManagementClient/util"
+	"produce_control_system_windows/sql"
+	"produce_control_system_windows/util"
 
 	"github.com/robfig/cron"
 )

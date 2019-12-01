@@ -2,7 +2,7 @@
 package sql
 
 import (
-	"PaperManagementClient/util"
+	"produce_control_system_windows/util"
 )
 
 var (

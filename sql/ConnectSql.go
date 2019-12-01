@@ -2,9 +2,9 @@
 package sql
 
 import (
-	"PaperManagementClient/util"
 	"database/sql"
 	"encoding/json"
+	"produce_control_system_windows/util"
 	"strconv"
 
 	_ "github.com/mattn/go-adodb"
@@ -39,6 +39,18 @@ type SA struct {
 	port   int
 }
 
+var mssql *Mssql
+
+func init() {
+	util.PrintLog("connectSql init")
+	mssql = NewMssql()
+	err := mssql.Open()
+	if err != nil {
+		util.PrintLog(err)
+		return
+	}
+}
+
 //返回数据
 type HistoryResponseJson struct {
 	Factory string `json:"Factory"`
@@ -48,9 +60,9 @@ type HistoryResponseJson struct {
 }
 
 func NewMssql() *Mssql {
-	mssql := new(Mssql)
+	sql := new(Mssql)
 	dataS := host + "\\" + server_name
-	mssql = &Mssql{
+	sql = &Mssql{
 		// 如果数据库是默认实例（MSSQLSERVER）则直接使用IP，命名实例需要指明。
 		// dataSource: "192.168.15.128\\MSSQLSERVER",
 		dataSource: dataS,
@@ -63,7 +75,7 @@ func NewMssql() *Mssql {
 			port:   port,
 		},
 	}
-	return mssql
+	return sql
 }
 
 func (m *Mssql) Open() error {
@@ -263,12 +275,12 @@ func ConnectSqlServer(_host, _user, _pwd, _database, _server_name string, _port 
 	server_name = _server_name
 	rows_limit = _rows_limit
 
-	mssql := NewMssql()
-	err := mssql.Open()
-	if err != nil {
-		util.PrintLog(err)
-		return
-	}
+	// mssql := NewMssql()
+	// err := mssql.Open()
+	// if err != nil {
+	// 	util.PrintLog(err)
+	// 	return
+	// }
 	//连接上数据库再赋值
 	//group = _group
 
@@ -296,15 +308,15 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 	server_name = _server_name
 	rows_limit = _rows_limit
 
-	mssql := NewMssql()
-	if cname == "" {
-		err := mssql.Open()
-		if err != nil {
-			util.PrintLog(err)
-			return
-		}
-		mssql.selectCompany()
-	}
+	// mssql := NewMssql()
+	// if cname == "" {
+	// 	err := mssql.Open()
+	// 	if err != nil {
+	// 		util.PrintLog(err)
+	// 		return
+	// 	}
+	mssql.selectCompany()
+	// }
 	if cname == "" {
 		util.PrintLog("cname is empty")
 		return
@@ -324,11 +336,11 @@ func SearchSqlServer(_host, _user, _pwd, _database, _server_name string, _port i
 		util.PrintLog("searchRequestStruct.Group:", searchRequestStruct.Group, ",group:", _group)
 		return
 	}
-	err = mssql.Open()
-	if err != nil {
-		util.PrintLog(err)
-		return
-	}
+	// err = mssql.Open()
+	// if err != nil {
+	// 	util.PrintLog(err)
+	// 	return
+	// }
 	//根据type到数据里搜索
 	if searchRequestStruct.Type == "order" {
 		//搜索订单
@@ -448,12 +460,12 @@ func mashalPostHistory(resp string) {
 		return
 	}
 	//然后到数据库里查询搜索结果
-	mssql := NewMssql()
-	err = mssql.Open()
-	if err != nil {
-		util.PrintLog(err)
-		return
-	}
+	// mssql := NewMssql()
+	// err = mssql.Open()
+	// if err != nil {
+	// 	util.PrintLog(err)
+	// 	return
+	// }
 	mssql.selectCompany()
 	//sql 语句
 	var historySql = "select qsrq, jzrq, tjsj, pjjs, pjzd, dds, hlcs, zms, zhgms, zmj, zhgmj, tjcs, zzl, hgzl, zxbmj, zxbzl, xbbl from schzb where bzbh='" + responseJson.Class + "' and rq='" + responseJson.Time + "'"
